@@ -1,0 +1,67 @@
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import { Bell, CalendarDays, Menu, Search, UserRound } from 'lucide-react';
+import { useUser } from '@clerk/clerk-react';
+import { Toaster } from 'react-hot-toast';
+import AdminSidebar from './AdminSidebar';
+import { useNotifications } from '../../contexts/NotificationContext';
+import { Link } from 'react-router-dom';
+
+const AdminLayout = () => {
+  const { user } = useUser();
+  const { unreadCount } = useNotifications();
+
+  return (
+    <div className="min-h-screen bg-[#fffaf7] text-[#201514]">
+      <Toaster />
+      <AdminSidebar />
+
+      <main className="ml-[248px] min-h-screen">
+        <header className="sticky top-0 z-40 flex h-[76px] items-center justify-between border-b border-[#eadbd6] bg-white/94 px-9 backdrop-blur">
+          <div className="flex items-center gap-7">
+            <button className="grid h-10 w-10 place-items-center rounded-full text-[#9a1515] transition hover:bg-[#fff3ef]" aria-label="Open admin menu">
+              <Menu className="h-5 w-5" />
+            </button>
+            <label className="flex h-11 w-[330px] items-center gap-3 rounded-full border border-[#eadbd6] bg-white px-5 shadow-[0_8px_24px_rgba(80,24,18,0.04)]">
+              <span className="sr-only">Search dashboard</span>
+              <Search className="h-5 w-5 text-[#a33a30]" />
+              <input
+                type="text"
+                placeholder="Search anything..."
+                className="w-full border-none bg-transparent text-sm text-[#4c3936] outline-none placeholder:text-[#8b7772]"
+              />
+            </label>
+          </div>
+
+          <div className="flex items-center gap-5">
+            <Link 
+              to="/admin/notifications"
+              className="relative grid h-10 w-10 place-items-center rounded-full text-[#9a1515] transition hover:bg-[#fff3ef]" 
+              aria-label="Notifications"
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-[#9a1515] text-[10px] font-bold text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </Link>
+            <button className="grid h-11 w-11 place-items-center overflow-hidden rounded-full bg-[#f7e9e2] text-[#201514]" aria-label="Admin profile">
+              {user?.imageUrl ? (
+                <img src={user.imageUrl} alt={user?.fullName || 'Admin'} className="h-full w-full object-cover" />
+              ) : (
+                <UserRound className="h-5 w-5" />
+              )}
+            </button>
+          </div>
+        </header>
+
+        <div className="mx-auto max-w-[1540px] px-9 py-9">
+          <Outlet />
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default AdminLayout;
