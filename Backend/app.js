@@ -38,8 +38,13 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), (req, res, n
 }, handleStripeWebhook);
 
 // Middleware
+app.use(cors({
+    origin: process.env.FRONTEND_URL || '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
-app.use(cors());
 app.use(helmet());
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));

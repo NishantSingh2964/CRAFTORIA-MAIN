@@ -11,13 +11,13 @@ const UserSync = () => {
       if (isLoaded && isSignedIn && user && !sessionStorage.getItem('userSynced')) {
         // Mark as synced immediately to prevent concurrent loops during the async fetch
         sessionStorage.setItem('userSynced', 'true');
-        
+
         try {
           // Log token for Postman testing
           const token = await getToken();
           console.log('--- CLERK READY ---');
 
-          const response = await fetch('http://localhost:5000/api/users/sync', {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/users/sync`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -27,13 +27,11 @@ const UserSync = () => {
               avatar: user.imageUrl,
             }),
           });
-          
+
           if (response.ok) {
             console.log('User synced to MongoDB successfully');
           } else {
-             // If it's a 500, we still don't want to loop. 
-             // We've already set sessionStorage 'userSynced' above.
-             console.warn('User sync returned non-ok status:', response.status);
+            console.warn('User sync returned non-ok status:', response.status);
           }
         } catch (err) {
           console.error('Error syncing user to database:', err);
