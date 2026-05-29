@@ -26,23 +26,40 @@ exports.getProducts = async (req, res, next) => {
             { $match: query },
             {
                 $lookup: {
-                    from: 'reviews', // The name of the reviews collection
-                    localField: '_id',
-                    foreignField: 'product',
+                    from: 'reviews',
+                    let: { productId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ['$product', '$$productId'] }
+                            }
+                        }
+                    ],
                     as: 'all_reviews'
                 }
             },
             {
                 $addFields: {
-                    reviewCount: { $size: '$all_reviews' }
+                    reviewCount: { $size: '$all_reviews' },
+                    averageRating: { 
+                        $round: [
+                            { 
+                                $cond: {
+                                    if: { $gt: [{ $size: '$all_reviews' }, 0] },
+                                    then: { $avg: '$all_reviews.rating' },
+                                    else: 0
+                                }
+                            }, 
+                            1
+                        ]
+                    }
                 }
             },
             {
                 $project: {
-                    all_reviews: 0 // We don't need the actual review objects here, just the count
+                    all_reviews: 0
                 }
-            },
-            {
+            },{
                 $sort: sort ? { [sort.startsWith('-') ? sort.slice(1) : sort]: sort.startsWith('-') ? -1 : 1 } : { createdAt: -1 }
             }
         ]);

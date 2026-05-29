@@ -97,7 +97,9 @@ const MostReviewedProducts = () => {
               {/* Review Badge */}
               <div className="absolute bottom-5 left-5 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-gray-100 flex items-center gap-1.5 shadow-sm transform transition-transform group-hover:scale-105">
                 <span className="text-amber-500">★</span>
-                <span className="font-sans text-[10px] font-bold text-gray-700">{product.rating || '4.9'}</span>
+                <span className="font-sans text-[10px] font-bold text-gray-700">
+                  {product.averageRating !== undefined ? (product.averageRating % 1 === 0 ? product.averageRating : product.averageRating.toFixed(1)) : (product.rating || 0)}
+                </span>
                 <span className="font-sans text-[9px] text-gray-400 border-l pl-1.5 ml-1">{product.reviewCount || 0} Reviews</span>
               </div>
             </div>
