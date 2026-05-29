@@ -292,7 +292,8 @@ console.log('🔄 Starting payment processing', form);
         name: item.name,
         quantity: item.quantity,
         price: Number(item.currentPrice),
-        image: item.image
+        image: item.image,
+        customization: item.customization || null
       })),
       totalAmount: orderTotal,
       deliveryInfo: {

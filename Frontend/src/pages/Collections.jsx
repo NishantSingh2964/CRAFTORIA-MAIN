@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useProducts } from '../contexts/ProductContext';
 import { useOccasions } from '../contexts/OccasionContext';
+import { useWishlist } from '../contexts/WishlistContext';
 import hero3 from '../assets/home/hero3.png?w=1400&format=webp&quality=82';
 
 const categoriesList = [
@@ -73,18 +74,10 @@ const Collections = () => {
   const [priceRange, setPriceRange] = useState(4999);
   const [sortBy, setSortBy] = useState('Popularity');
   const [currentPage, setCurrentPage] = useState(1);
-  const [favorites, setFavorites] = useState({});
+  const { wishlist, toggleWishlist, isInWishlist } = useWishlist();
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-
-  // Toggle Favorite Status
-  const toggleFavorite = (productId) => {
-    setFavorites(prev => ({
-      ...prev,
-      [productId]: !prev[productId]
-    }));
-  };
 
   const getNumericPrice = (price) => parseInt(String(price).replace(/[^\d]/g, ''), 10) || 0;
 
@@ -464,19 +457,19 @@ const Collections = () => {
 
                     {/* Heart/Wishlist Button toggling with state */}
                     <button 
-                      onClick={(e) => { e.stopPropagation(); toggleFavorite(prod._id); }}
+                      onClick={(e) => { e.stopPropagation(); toggleWishlist(prod); }}
                       className="absolute top-5 right-5 p-2.5 bg-white rounded-full shadow-md hover:scale-110 active:scale-95 transition-all duration-300 z-20 cursor-pointer"
                       type="button"
-                      aria-label={`${favorites[prod._id] ? 'Remove' : 'Add'} ${prod.name} ${favorites[prod._id] ? 'from' : 'to'} wishlist`}
-                      aria-pressed={Boolean(favorites[prod._id])}
+                      aria-label={`${isInWishlist(prod._id) ? 'Remove' : 'Add'} ${prod.name} ${isInWishlist(prod._id) ? 'from' : 'to'} wishlist`}
+                      aria-pressed={isInWishlist(prod._id)}
                     >
                       <svg 
                         xmlns="http://www.w3.org/2000/svg" 
                         width="18" 
                         height="18" 
                         viewBox="0 0 24 24" 
-                        fill={favorites[prod._id] ? "#760000" : "none"} 
-                        stroke={favorites[prod._id] ? "#760000" : "#9ca3af"} 
+                        fill={isInWishlist(prod._id) ? "#ef4444" : "none"} 
+                        stroke={isInWishlist(prod._id) ? "#ef4444" : "#9ca3af"} 
                         strokeWidth="2" 
                         strokeLinecap="round" 
                         strokeLinejoin="round"

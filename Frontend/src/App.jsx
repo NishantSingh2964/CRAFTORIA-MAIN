@@ -4,10 +4,12 @@ import Layout from './layouts/Layout';
 import { CartProvider } from './contexts/CartContext';
 import { OrderProvider } from './contexts/OrderContext';
 import { ProductProvider } from './contexts/ProductContext';
+import { PersonalizedProvider } from './contexts/PersonalizedContext';
 import { OccasionProvider } from './contexts/OccasionContext';
 import { AdminProvider } from './contexts/AdminContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { ReviewProvider } from './contexts/ReviewContext';
+import { WishlistProvider } from './contexts/WishlistContext';
 import Loader from './components/Loader';
 import { LazyClerkProvider } from './providers/LazyClerk';
 
@@ -27,6 +29,7 @@ const Cart = lazy(() => import('./pages/Cart'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const Success = lazy(() => import('./pages/Success'));
 const MyOrders = lazy(() => import('./pages/MyOrders'));
+const Wishlist = lazy(() => import('./pages/Wishlist'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Admin Pages
@@ -42,6 +45,9 @@ const AdminOccasions = lazy(() => import('./pages/admin/Occasions'));
 const AdminAddOccasion = lazy(() => import('./pages/admin/AddOccasion'));
 const AdminEditOccasion = lazy(() => import('./pages/admin/EditOccasion'));
 const AdminNotifications = lazy(() => import('./pages/admin/Notifications'));
+const AdminPersonalizedProducts = lazy(() => import('./pages/admin/PersonalizedProducts'));
+const AdminAddPersonalizedProduct = lazy(() => import('./pages/admin/AddPersonalizedProduct'));
+const AdminEditPersonalizedProduct = lazy(() => import('./pages/admin/EditPersonalizedProduct'));
 
 const PageFallback = () => <Loader message="Arranging your gifts..." />;
 
@@ -54,10 +60,12 @@ const App = () => {
       <Router>
         <LazyClerkProvider publishableKey={clerkPubKey}>
           <ProductProvider>
+            <PersonalizedProvider>
             <OccasionProvider>
               <OrderProvider>
                 <CartProvider>
                   <NotificationProvider>
+                    <WishlistProvider>
                     <ReviewProvider>
                       <Suspense fallback={<PageFallback />}>
                         <Routes>
@@ -73,6 +81,7 @@ const App = () => {
                             <Route path="checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                             <Route path="success" element={<ProtectedRoute><Success /></ProtectedRoute>} />
                             <Route path="my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+                            <Route path="wishlist" element={<Wishlist />} />
                             <Route path="*" element={<NotFound />} />
                           </Route>
 
@@ -96,16 +105,21 @@ const App = () => {
                             <Route path="occasions/add" element={<AdminAddOccasion />} />
                             <Route path="occasions/edit/:id" element={<AdminEditOccasion />} />
                             <Route path="notifications" element={<AdminNotifications />} />
+                            <Route path="personalized-products" element={<AdminPersonalizedProducts />} />
+                            <Route path="personalized-products/add" element={<AdminAddPersonalizedProduct />} />
+                            <Route path="personalized-products/edit/:id" element={<AdminEditPersonalizedProduct />} />
                           </Route>
 
 
                         </Routes>
                       </Suspense>
                     </ReviewProvider>
+                    </WishlistProvider>
                   </NotificationProvider>
                 </CartProvider>
               </OrderProvider>
             </OccasionProvider>
+            </PersonalizedProvider>
           </ProductProvider>
         </LazyClerkProvider>
       </Router>

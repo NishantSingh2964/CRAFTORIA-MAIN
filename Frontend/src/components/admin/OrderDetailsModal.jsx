@@ -64,7 +64,26 @@ const OrderDetailsModal = ({ order, onClose }) => {
                   <img src={item.image || ''} alt={item.name || 'Product'} className="h-20 w-20 rounded-xl object-cover shadow-sm bg-white" />
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-[#171111] truncate">{item.name || 'Unknown Product'}</p>
-                    <p className="text-sm font-medium text-gray-500 mt-1">Qty: <span className="text-[#171111] font-black">{item.quantity || 0}</span></p>
+                    <p className="text-sm font-medium text-gray-500 mt-0.5">Qty: <span className="text-[#171111] font-black">{item.quantity || 0}</span></p>
+
+                    {item.customization && (
+                      <div className="mt-3 p-3 rounded-lg bg-[#fff8f6] border border-[#f0e3df] space-y-2">
+                        {item.customization.text && (
+                          <p className="text-xs font-medium text-[#4c3936]">
+                            <span className="font-black text-[#8d0000] uppercase tracking-tighter mr-1">Message:</span> 
+                            {item.customization.text}
+                          </p>
+                        )}
+                        {item.customization.photo && (
+                          <div className="flex items-start gap-2">
+                            <span className="text-xs font-black text-[#8d0000] uppercase tracking-tighter">Photo:</span>
+                            <div className="relative group/photo">
+                              <img src={item.customization.photo} alt="Custom" className="h-12 w-12 rounded border border-white shadow-sm cursor-zoom-in group-hover/photo:scale-110 transition" onClick={() => window.open(item.customization.photo, '_blank')} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="font-black text-[#171111]">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(item.price || 0)}</p>

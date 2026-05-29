@@ -5,7 +5,7 @@
  * @param {number} quality - Quality of the compression (0 to 1)
  * @returns {Promise<File>} - The compressed image file
  */
-export const compressImage = (file, maxWidth = 1200, quality = 0.7) => {
+export const compressImage = (file, maxWidth = 1000, quality = 0.6) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -28,6 +28,8 @@ export const compressImage = (file, maxWidth = 1200, quality = 0.7) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
+        const outputType = file.type || 'image/jpeg';
+
         canvas.toBlob(
           (blob) => {
             if (!blob) {
@@ -35,12 +37,12 @@ export const compressImage = (file, maxWidth = 1200, quality = 0.7) => {
               return;
             }
             const compressedFile = new File([blob], file.name, {
-              type: 'image/jpeg',
+              type: outputType,
               lastModified: Date.now(),
             });
             resolve(compressedFile);
           },
-          'image/jpeg',
+          outputType,
           quality
         );
       };

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const productSchema = new mongoose.Schema({
+const personalizedProductSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Please add a product name'],
@@ -13,11 +13,6 @@ const productSchema = new mongoose.Schema({
     occasions: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Occasion'
-    }],
-    recipients: [{
-        type: String,
-        enum: ['Partner', 'Family', 'Friend', 'Kids', 'Colleague'],
-        default: []
     }],
     description: {
         type: String,
@@ -47,9 +42,14 @@ const productSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    testimonials: [{
-        user: String,
-        comment: String
+    personalizationType: {
+        type: String,
+        enum: ['Text', 'Photo', 'Both', 'None'],
+        default: 'Text'
+    },
+    customizationSteps: [{
+        title: String,
+        description: String
     }],
     stock: {
         type: Number,
@@ -59,14 +59,9 @@ const productSchema = new mongoose.Schema({
     isAvailable: {
         type: Boolean,
         default: true
-    },
-    personalizationType: {
-        type: String,
-        enum: ['Text', 'Photo', 'Both', 'None'],
-        default: 'None'
     }
 }, {
     timestamps: true
 });
 
-module.exports = mongoose.model('Product', productSchema);
+module.exports = mongoose.model('PersonalizedProduct', personalizedProductSchema);

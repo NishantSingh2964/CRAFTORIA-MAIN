@@ -6,6 +6,7 @@ import {
   LogOut,
   PackagePlus,
   ShoppingBag,
+  Sparkles,
   Store,
   TrendingUp,
   Users,
@@ -19,6 +20,7 @@ const navItems = [
   { icon: Store, label: 'Product Listing', path: '/admin/products' },
   { icon: Grid2X2, label: 'Occasions', path: '/admin/occasions' },
   { icon: ShoppingBag, label: 'Orders Listing', path: '/admin/orders' },
+  { icon: Sparkles, label: 'Personalized Gifts', path: '/admin/personalized-products' },
   { icon: Users, label: 'Users', path: '/admin/users' },
   { icon: TrendingUp, label: 'Expenses', path: '/admin/expenses' },
 ];
@@ -31,10 +33,10 @@ const AdminSidebar = ({ isCollapsed }) => {
     <aside className={`fixed left-0 top-0 z-50 flex h-screen flex-col overflow-hidden bg-[#8d0000] text-white shadow-[18px_0_45px_rgba(70,0,0,0.16)] transition-all duration-300 ${isCollapsed ? 'w-[80px]' : 'w-[248px]'}`}>
       <div className="relative flex h-[128px] shrink-0 flex-col items-center justify-center border-b border-white/8 px-4">
         <Link to="/" className="flex items-center justify-center transition-transform hover:scale-105">
-          <img 
-            src={logo} 
-            alt="Craftoria" 
-            className={`brightness-0 invert transition-all duration-300 ${isCollapsed ? 'h-10 w-10 object-contain' : 'h-16 w-auto'}`} 
+          <img
+            src={logo}
+            alt="Craftoria"
+            className={`brightness-0 invert transition-all duration-300 ${isCollapsed ? 'h-10 w-10 object-contain' : 'h-16 w-auto'}`}
           />
         </Link>
       </div>

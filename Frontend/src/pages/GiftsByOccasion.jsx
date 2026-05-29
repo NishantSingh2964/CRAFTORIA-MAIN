@@ -2,15 +2,36 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import hero4 from '../assets/home/hero4.webp';
 import { useOccasions } from '../contexts/OccasionContext';
+import { useProducts } from '../contexts/ProductContext';
+import { useCart } from '../contexts/CartContext';
+import { useWishlist } from '../contexts/WishlistContext';
+import { formatPrice } from '../utils/formatPrice';
+import { Heart, ShoppingBag } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const GiftsByOccasion = () => {
-  const { occasions, loading } = useOccasions();
-  const [selectedFinderOccasion, setSelectedFinderOccasion] = useState('Birthday');
+  const { occasions, loading: occasionsLoading } = useOccasions();
+  const { products, fetchProducts, loading: productsLoading } = useProducts();
+  const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+
+  const [selectedFinderOccasion, setSelectedFinderOccasion] = useState('');
   const [selectedFinderRecipient, setSelectedFinderRecipient] = useState('Partner');
   const [revealedMatch, setRevealedMatch] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
 
-  if (loading && occasions.length === 0) {
+  // Set initial occasion when loaded
+  React.useEffect(() => {
+    if (occasions.length > 0 && !selectedFinderOccasion) {
+      setSelectedFinderOccasion(occasions[0].name);
+    }
+  }, [occasions]);
+
+  React.useEffect(() => {
+    if (products.length === 0) fetchProducts();
+  }, []);
+
+  if (occasionsLoading && occasions.length === 0) {
     return (
       <div className="site-container pt-40 pb-16 text-center">
         <p className="text-gray-500 animate-pulse font-serif text-xl">Curating special moments...</p>
@@ -81,19 +102,36 @@ const GiftsByOccasion = () => {
     setIsSearching(true);
     setRevealedMatch(null);
 
-    // Simulate luxury finder search delay
     setTimeout(() => {
-      const key = `${selectedFinderOccasion}-${selectedFinderRecipient}`;
-      // Fallback matching logic
-      const result = giftMatches[key] || {
-        name: 'Ultimate Custom Bespoke Keepsake Basket',
-        price: '$150.00',
-        matchScore: '91% Match',
-        desc: 'A tailored collection crafted by our master curations team containing luxury keepsakes, customized to your selected criteria.'
-      };
-      setRevealedMatch(result);
+      // Find a real product that matches the permutation
+      const matchedProduct = products.find(prod => {
+        const hasOccasion = prod.occasions?.some(occ => {
+          const occName = typeof occ === 'object' ? occ.name : occ;
+          // If we have populated objects, check name. If IDs, we'd need more logic, 
+          // but usually prod.occasion (string) or name match works for this "finder".
+          return String(occName).toLowerCase() === selectedFinderOccasion.toLowerCase();
+        });
+
+        const hasRecipient = prod.recipients?.includes(selectedFinderRecipient);
+        
+        return hasOccasion && hasRecipient;
+      });
+
+      // If no perfect match, find any product for that occasion
+      const fallbackMatch = matchedProduct || products.find(prod => {
+        return prod.occasions?.some(occ => {
+          const occName = typeof occ === 'object' ? occ.name : occ;
+          return String(occName).toLowerCase() === selectedFinderOccasion.toLowerCase();
+        });
+      });
+
+      if (fallbackMatch) {
+         setRevealedMatch(fallbackMatch);
+      } else {
+         toast.error("No specific matches found. Try another combination!");
+      }
       setIsSearching(false);
-    }, 900);
+    }, 1200);
   };
 
   return (
@@ -149,9 +187,10 @@ const GiftsByOccasion = () => {
                   onChange={(e) => setSelectedFinderOccasion(e.target.value)}
                   className="w-full font-heading bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-[12.5px] text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#760000]"
                 >
-                  <option value="Birthday">Birthday</option>
-                  <option value="Anniversary">Anniversary</option>
-                  <option value="Corporate Milestone">Corporate Milestone</option>
+                  <option value="">Select Occasion</option>
+                  {occasions.map(occ => (
+                    <option key={occ._id} value={occ.name}>{occ.name}</option>
+                  ))}
                 </select>
               </div>
 
@@ -186,30 +225,56 @@ const GiftsByOccasion = () => {
             {/* Results Area */}
             {revealedMatch && (
               <div className="mt-8 pt-8 border-t border-gray-100 animate-slide-up">
-                <div className="bg-red-50/40 border border-red-100 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="bg-[#760000] text-white font-heading text-[8px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full">
-                        {revealedMatch.matchScore}
+                <div className="bg-white border border-red-100 rounded-3xl p-5 sm:p-7 flex flex-col md:flex-row items-center gap-8 shadow-xl shadow-red-900/5 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4">
+                     <span className="bg-[#760000] text-white font-heading text-[9px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
+                        98% Match
                       </span>
-                      <span className="font-heading text-[10px] font-semibold text-red-700 uppercase tracking-widest">
-                        Our Recommendation
+                  </div>
+                  
+                  {/* Product Image */}
+                  <div className="w-full md:w-56 shrink-0 aspect-[4/3] rounded-2xl overflow-hidden bg-gray-50 border border-gray-100">
+                    <img 
+                      src={revealedMatch.image} 
+                      alt={revealedMatch.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  <div className="flex-1 text-center md:text-left">
+                    <div className="mb-2">
+                      <span className="font-heading text-[10px] font-semibold text-red-700 uppercase tracking-[0.2em]">
+                        Your Perfect Match
                       </span>
                     </div>
-                    <h4 className="card-title-lg mb-2">
+                    <h4 className="font-serif text-2xl font-bold text-gray-900 mb-3">
                       {revealedMatch.name}
                     </h4>
-                    <p className="body-copy-sm max-w-xl">
-                      {revealedMatch.desc}
+                    <p className="body-copy-sm mb-6 line-clamp-2">
+                      {revealedMatch.description}
                     </p>
-                  </div>
-                  <div className="text-center sm:text-right shrink-0">
-                    <span className="block font-sans text-2xl font-extrabold text-gray-900 mb-3">
-                      {revealedMatch.price}
-                    </span>
-                    <button className="px-6 py-2.5 bg-[#760000] text-white action-link text-[10px] rounded-lg hover:bg-red-800 transition-colors shadow-md shadow-red-700/10 cursor-pointer">
-                      Buy Now
-                    </button>
+                    
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                      <span className="font-sans text-3xl font-black text-[#760000]">
+                        {formatPrice(revealedMatch.currentPrice)}
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <Link 
+                          to={`/product/${revealedMatch._id}`}
+                          className="px-8 py-3 bg-[#760000] text-white font-bold text-[11px] uppercase tracking-widest rounded-xl hover:bg-red-800 transition-all shadow-lg shadow-red-700/20"
+                        >
+                          See More
+                        </Link>
+                        <button 
+                          onClick={() => toggleWishlist(revealedMatch)}
+                          className={`p-3 rounded-xl border transition-all ${
+                            isInWishlist(revealedMatch._id) ? 'bg-red-50 border-red-200 text-red-600' : 'bg-white border-gray-200 text-gray-400 hover:text-red-600'
+                          }`}
+                        >
+                          <Heart size={20} fill={isInWishlist(revealedMatch._id) ? "currentColor" : "none"} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

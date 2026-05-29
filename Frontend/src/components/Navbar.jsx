@@ -1,7 +1,9 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
+import { useWishlist } from '../contexts/WishlistContext';
 import { useClerkMount } from '../providers/LazyClerk';
+import { Heart } from 'lucide-react';
 
 const NavbarClerkAuth = lazy(() => import('./NavbarClerkAuth'));
 
@@ -24,6 +26,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { clerkReady, ensureClerk } = useClerkMount();
   const { cartItems } = useCart();
+  const { wishlist } = useWishlist();
   const [autoSignIn, setAutoSignIn] = useState(false);
 
   const handleLoginClick = () => {
@@ -54,6 +57,7 @@ const Navbar = () => {
   ];
 
   const cartCount = cartItems ? cartItems.length : 0;
+  const wishlistCount = wishlist ? wishlist.length : 0;
 
   const loginButtonClass = isScrolled
     ? `${loginButtonBase} bg-white text-[#760000] hover:bg-red-50`
@@ -110,7 +114,17 @@ const Navbar = () => {
           </div>
 
           {/* Right-side icons (desktop) */}
-          <div className="hidden lg:flex items-center space-x-5">
+          <div className="hidden lg:flex items-center space-x-6">
+
+            {/* Wishlist icon */}
+            <Link to="/wishlist" className={`relative ${iconClass}`} aria-label={`Wishlist with ${wishlistCount} item${wishlistCount === 1 ? '' : 's'}`}>
+              <Heart size={21} />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center shadow" aria-hidden="true">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
 
             {/* Cart icon */}
             <Link to="/cart" className={`relative ${iconClass}`} aria-label={`Cart with ${cartCount} item${cartCount === 1 ? '' : 's'}`}>
@@ -139,8 +153,18 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile: cart + hamburger */}
+          {/* Mobile: wishlist + cart + hamburger */}
           <div className="lg:hidden flex items-center gap-4">
+            {/* Mobile wishlist icon */}
+            <Link to="/wishlist" className={`relative ${iconClass}`} aria-label={`Wishlist with ${wishlistCount} item${wishlistCount === 1 ? '' : 's'}`}>
+              <Heart size={21} />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center shadow" aria-hidden="true">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
             {/* Mobile cart icon */}
             <Link to="/cart" className={`relative ${iconClass}`} aria-label={`Cart with ${cartCount} item${cartCount === 1 ? '' : 's'}`}>
               <BagIcon />

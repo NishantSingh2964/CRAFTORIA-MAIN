@@ -31,6 +31,8 @@ const BADGE_OPTIONS = [
   'Sale',
 ];
 
+const PERSONALIZATION_TYPES = ['None', 'Text', 'Photo', 'Both'];
+
 const AddProduct = () => {
   const navigate = useNavigate();
   const { addProduct } = useProducts();
@@ -51,25 +53,32 @@ const AddProduct = () => {
     stock: '',
     badge: '',
     isAvailable: true,
+    personalizationType: 'None',
   });
 
   const updateField = (key, value) => {
     setFormData(curr => ({ ...curr, [key]: value }));
   };
 
+  const [isOptimizing, setIsOptimizing] = useState(false);
+
   const handleImageChange = async (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      const loadingToast = toast.loading('Optimizing image for speed...');
+      setIsOptimizing(true);
       try {
         const compressed = await compressImage(selectedFile);
         setFile(compressed);
         const reader = new FileReader();
-        reader.onloadend = () => setPreview(reader.result);
+        reader.onloadend = () => {
+          setPreview(reader.result);
+          setIsOptimizing(false);
+          toast.success('Image ready');
+        };
         reader.readAsDataURL(compressed);
-        toast.success('Image optimized!', { id: loadingToast });
       } catch (error) {
-        toast.error('Failed to process image', { id: loadingToast });
+        setIsOptimizing(false);
+        toast.error('Failed to process image');
         console.error(error);
       }
     }
@@ -166,6 +175,20 @@ const AddProduct = () => {
                       className="h-12 w-full appearance-none rounded-lg border border-[#e4d5cf] bg-[#fafafa] px-4 text-sm text-[#253040] outline-none transition focus:border-[#9a1515] focus:bg-white"
                     >
                       {CATEGORIES.map(cat => <option key={cat}>{cat}</option>)}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#52606d]" />
+                  </div>
+                </label>
+
+                <label className="block space-y-2">
+                  <span className="text-xs font-black uppercase tracking-[0.22em] text-[#8d0000]">Personalization Option</span>
+                  <div className="relative">
+                    <select
+                      value={formData.personalizationType}
+                      onChange={e => updateField('personalizationType', e.target.value)}
+                      className="h-12 w-full appearance-none rounded-lg border border-[#e4d5cf] bg-[#fafafa] px-4 text-sm text-[#253040] outline-none transition focus:border-[#9a1515] focus:bg-white"
+                    >
+                      {PERSONALIZATION_TYPES.map(type => <option key={type} value={type}>{type} Entry</option>)}
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#52606d]" />
                   </div>

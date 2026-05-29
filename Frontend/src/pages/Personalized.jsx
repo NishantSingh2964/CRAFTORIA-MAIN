@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { generateBasketImage } from '../services/aiService';
 import { useProducts } from '../contexts/ProductContext';
+import { usePersonalized } from '../contexts/PersonalizedContext';
 import { useCart } from '../contexts/CartContext';
 import { formatPrice } from '../utils/formatPrice';
 
@@ -35,14 +36,30 @@ const Personalized = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { products: allProducts, fetchProducts, loading: productsLoading } = useProducts();
+  const { personalizedProducts: livePersonalizedProducts, fetchPersonalizedProducts, loading: personalizedLoading } = usePersonalized();
 
   useEffect(() => {
     if (allProducts.length === 0) fetchProducts();
+    fetchPersonalizedProducts();
   }, []);
 
-  // Reverted to hardcoded data
-  const basketProductsList = basketProducts;
-  const dynamicCategories = categories;
+  const displayProducts = personalizedProducts;
+
+  // Use live data for the Basket Builder (Choose Gifts) section
+  const basketProductsList = livePersonalizedProducts.map(p => ({
+    id: p._id,
+    name: p.name,
+    price: p.currentPrice,
+    weight: 0.5,
+    category: p.category || 'Extras',
+    image: p.image,
+    emoji: '🎁'
+  }));
+
+  // Fallback to mock data if no live products exist
+  const effectiveBasketProducts = basketProductsList.length > 0 ? basketProductsList : basketProducts;
+  
+  const dynamicCategories = ['All', ...new Set(effectiveBasketProducts.map(p => p.category))];
 
   useEffect(() => {
     if (aiGeneratedImages.length > 0) {
@@ -67,7 +84,7 @@ const Personalized = () => {
 
   const selectedItems = basketItems
     .map((basketItem) => {
-      const product = basketProductsList.find((item) => item.id === basketItem.id);
+      const product = effectiveBasketProducts.find((item) => item.id === basketItem.id);
       if (!product) return null;
       return {
         ...product,
@@ -78,8 +95,8 @@ const Personalized = () => {
 
   const filteredBasketProducts =
     activeCategory === 'All'
-      ? basketProductsList
-      : basketProductsList.filter((item) => item.category === activeCategory);
+      ? effectiveBasketProducts
+      : effectiveBasketProducts.filter((item) => item.category === activeCategory);
 
   const basketTotal = selectedItems.reduce((total, item) => total + item.price * item.quantity, 0);
   const basketWeight = selectedItems.reduce((total, item) => total + item.weight * item.quantity, 0);
@@ -179,7 +196,7 @@ const Personalized = () => {
            formatPrice={formatPrice}
            aiGeneratedImages={aiGeneratedImages}
         />
-        <CatalogSection products={personalizedProducts} />
+        <CatalogSection products={displayProducts} />
         <ExperienceForm 
            form={contactForm}
            updateField={(f, v) => setContactForm(p => ({...p, [f]: v}))}

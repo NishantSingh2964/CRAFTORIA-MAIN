@@ -2,11 +2,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useProducts } from '../contexts/ProductContext';
+import { usePersonalized } from '../contexts/PersonalizedContext';
 import { useCart } from '../contexts/CartContext';
 import { useReviews } from '../contexts/ReviewContext';
 import { useUser } from '@clerk/clerk-react';
 import toast from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
+import { compressImage } from '../utils/imageCompressor';
 import touchImage from '../assets/home/Touch.png?w=800&format=webp&quality=80';
 import { 
   Star, 
@@ -17,7 +19,9 @@ import {
   MoreVertical, 
   Heart,
   CheckCircle2,
-  Trash2
+  Trash2,
+  Image as ImageIcon,
+  Type
 } from 'lucide-react';
 
 const WhatsAppIcon = ({ className = 'h-5 w-5' }) => (
@@ -47,12 +51,19 @@ const ProductDetail = () => {
   const { id } = useParams();
   const [quantity, setQuantity] = useState(1);
   const { fetchProductById, fetchProducts, products } = useProducts();
+  const { fetchPersonalizedProductById } = usePersonalized();
   const { addToCart } = useCart();
   const { reviews, fetchReviewsByProduct, submitReview, deleteReview, loading: reviewsLoading } = useReviews();
   const { user, isSignedIn } = useUser();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Personalization State
+  const [personalizationText, setPersonalizationText] = useState('');
+  const [personalizationPhoto, setPersonalizationPhoto] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [isOptimizing, setIsOptimizing] = useState(false);
 
   // Review Form State
   const [rating, setRating] = useState(5);
@@ -65,19 +76,25 @@ const ProductDetail = () => {
     const loadProduct = async () => {
       setLoading(true);
       try {
-        // Parallelize fetching to reduce total wait time
-        const [res] = await Promise.all([
-          fetchProductById(id),
-          fetchReviewsByProduct(id),
-          // Only fetch global products if they aren't already loaded in context
-          products.length === 0 ? fetchProducts() : Promise.resolve()
-        ]);
-
+        // try standard first
+        const res = await fetchProductById(id);
+        
         if (res.success) {
           setProduct(res.data);
+          fetchReviewsByProduct(id);
         } else {
-          setError(res.error);
+          // try personalized
+          const persRes = await fetchPersonalizedProductById(id);
+          if (persRes.success) {
+            setProduct(persRes.data);
+            fetchReviewsByProduct(id);
+          } else {
+            setError(res.error || persRes.error);
+          }
         }
+
+        // Always fetch global products if they aren't already loaded in context
+        if (products.length === 0) fetchProducts();
       } catch (err) {
         setError('An unexpected error occurred');
       } finally {
@@ -252,6 +269,81 @@ const ProductDetail = () => {
 
             <p className="body-copy text-[15px] text-gray-700 max-w-xl mb-7">{product.description}</p>
 
+            {/* Customization Fields */}
+            {product.personalizationType && product.personalizationType !== 'None' && (
+              <div className="mb-8 p-6 rounded-2xl bg-[#fff9f8] border border-red-100 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <Pencil className="h-4 w-4 text-[#760000]" />
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-[#760000]">Personalize Your Gift</h3>
+                </div>
+
+                {(product.personalizationType === 'Text' || product.personalizationType === 'Both') && (
+                  <div className="space-y-2 mb-4">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      <Type className="h-3 w-3" />
+                      Your Message / Name
+                    </label>
+                    <input
+                      type="text"
+                      value={personalizationText}
+                      onChange={(e) => setPersonalizationText(e.target.value)}
+                      placeholder="Enter the name or message..."
+                      className="w-full h-12 px-4 rounded-lg border border-gray-200 focus:border-[#760000]/30 focus:ring-4 focus:ring-[#760000]/5 outline-none transition bg-white text-sm"
+                    />
+                  </div>
+                )}
+
+                {(product.personalizationType === 'Photo' || product.personalizationType === 'Both') && (
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      <ImageIcon className="h-3 w-3" />
+                      Upload Photo
+                    </label>
+                    <div className="relative group">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            setIsOptimizing(true);
+                            try {
+                              const compressed = await compressImage(file);
+                              setPersonalizationPhoto(compressed);
+                              const reader = new FileReader();
+                              reader.onloadend = () => setPhotoPreview(reader.result);
+                              reader.readAsDataURL(compressed);
+                              toast.success('Photo uploaded!');
+                            } catch (err) {
+                              toast.error('Failed to process image');
+                            } finally {
+                              setIsOptimizing(false);
+                            }
+                          }
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className={`h-24 w-full rounded-lg border-2 border-dashed flex flex-col items-center justify-center transition-all ${photoPreview ? 'border-green-200 bg-green-50' : 'border-red-100 bg-white group-hover:border-[#760000]/30'}`}>
+                        {isOptimizing ? (
+                          <p className="text-xs text-[#760000] animate-pulse font-bold">Optimizing Image...</p>
+                        ) : photoPreview ? (
+                          <div className="flex items-center gap-3 px-4">
+                            <img src={photoPreview} alt="Preview" className="h-16 w-16 rounded object-cover border border-white shadow-sm" />
+                            <p className="text-xs text-green-700 font-bold uppercase tracking-wider">Image Ready</p>
+                          </div>
+                        ) : (
+                          <>
+                            <ImageIcon className="h-5 w-5 text-gray-400 mb-1" />
+                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Tap to upload high-res photo</p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="mb-8">
               <h2 className="micro-label text-gray-900 mb-4">What's Inside?</h2>
               <ul className="space-y-3">
@@ -276,7 +368,33 @@ const ProductDetail = () => {
             </div>
 
             <div className="space-y-4">
-              <button type="button" onClick={() => { addToCart(product); toast.success('Product added successfully'); }} className="w-full h-14 rounded-md bg-[#760000] text-white action-link shadow-[0_12px_26px_rgba(118,0,0,0.22)] hover:bg-[#760000] transition">
+              <button 
+                type="button" 
+                onClick={() => { 
+                  if (product.personalizationType === 'Text' && !personalizationText) {
+                    toast.error('Please enter your custom text');
+                    return;
+                  }
+                  if (product.personalizationType === 'Photo' && !personalizationPhoto) {
+                    toast.error('Please upload your photo');
+                    return;
+                  }
+                  if (product.personalizationType === 'Both' && (!personalizationText || !personalizationPhoto)) {
+                    toast.error('Please provide both text and photo');
+                    return;
+                  }
+
+                  addToCart({
+                    ...product,
+                    customization: {
+                      text: personalizationText,
+                      photo: photoPreview // Using preview for now, real app would upload to cloud first
+                    }
+                  }, quantity); 
+                  toast.success('Product added successfully'); 
+                }} 
+                className="w-full h-14 rounded-md bg-[#760000] text-white action-link shadow-[0_12px_26px_rgba(118,0,0,0.22)] hover:bg-[#760000] transition"
+              >
                 Add To Cart
               </button>
               <button

@@ -67,7 +67,8 @@ exports.createCheckoutSession = async (req, res, next) => {
                 name: i.name,
                 quantity: i.quantity,
                 price: Number(i.price),
-                image: i.image
+                image: i.image,
+                customization: i.customization || null
             })),
             totalAmount,
             deliveryInfo,
