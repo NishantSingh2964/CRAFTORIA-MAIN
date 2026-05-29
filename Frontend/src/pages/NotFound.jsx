@@ -4,7 +4,7 @@ import { Home, ArrowLeft } from 'lucide-react';
 
 const NotFound = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fafafa] px-6 py-24 relative overflow-hidden">
+    <div className="flex items-center justify-center bg-[#fafafa] px-6 py-32 relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute top-[-10%] left-[-5%] w-64 h-64 bg-[#760000]/5 rounded-full blur-3xl opacity-50"></div>
       <div className="absolute bottom-[-5%] right-[-5%] w-96 h-96 bg-[#760000]/5 rounded-full blur-3xl opacity-50"></div>
@@ -53,12 +53,6 @@ const NotFound = () => {
         </div>
       </div>
       
-      {/* Footer text */}
-      <div className="absolute bottom-10 left-0 right-0 text-center">
-        <p className="font-serif italic text-gray-400 text-sm tracking-wide">
-          Craftorio &copy; {new Date().getFullYear()} — Curated with Love
-        </p>
-      </div>
     </div>
   );
 };

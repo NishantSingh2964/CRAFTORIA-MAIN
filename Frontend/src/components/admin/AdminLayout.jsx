@@ -10,16 +10,24 @@ import { Link } from 'react-router-dom';
 const AdminLayout = () => {
   const { user } = useUser();
   const { unreadCount } = useNotifications();
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
+
+  const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
   return (
     <div className="min-h-screen bg-[#fffaf7] text-[#201514]">
       <Toaster />
-      <AdminSidebar />
+      <Toaster />
+      <AdminSidebar isCollapsed={isCollapsed} />
 
-      <main className="ml-[248px] min-h-screen">
+      <main className={`${isCollapsed ? 'ml-[80px]' : 'ml-[248px]'} min-h-screen transition-all duration-300`}>
         <header className="sticky top-0 z-40 flex h-[76px] items-center justify-between border-b border-[#eadbd6] bg-white/94 px-9 backdrop-blur">
           <div className="flex items-center gap-7">
-            <button className="grid h-10 w-10 place-items-center rounded-full text-[#9a1515] transition hover:bg-[#fff3ef]" aria-label="Open admin menu">
+            <button 
+              onClick={toggleSidebar}
+              className="grid h-10 w-10 place-items-center rounded-full text-[#9a1515] transition hover:bg-[#fff3ef]" 
+              aria-label="Toggle sidebar"
+            >
               <Menu className="h-5 w-5" />
             </button>
             <label className="flex h-11 w-[330px] items-center gap-3 rounded-full border border-[#eadbd6] bg-white px-5 shadow-[0_8px_24px_rgba(80,24,18,0.04)]">

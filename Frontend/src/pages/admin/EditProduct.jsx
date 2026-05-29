@@ -6,6 +6,7 @@ import { useOccasions } from '../../contexts/OccasionContext';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { getAuthToken } from '../../services/api';
+import { compressImage } from '../../utils/imageCompressor';
 
 const CATEGORIES = [
   'Personalized Gifts',
@@ -17,6 +18,19 @@ const CATEGORIES = [
   'Soft Toys',
   'Gift Cards',
   'Corporate Gifts',
+];
+
+const BADGE_OPTIONS = [
+  'None',
+  'New Arrival',
+  'Best Seller',
+  'Limited Edition',
+  'Featured',
+  'Trending',
+  'Premium',
+  'Handcrafted',
+  'Offer',
+  'Sale',
 ];
 
 const EditProduct = () => {
@@ -76,13 +90,21 @@ const EditProduct = () => {
 
   const updateField = (key, value) => setFormData(curr => ({ ...curr, [key]: value }));
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result);
-      reader.readAsDataURL(selectedFile);
+      const loadingToast = toast.loading('Optimizing image for speed...');
+      try {
+        const compressed = await compressImage(selectedFile);
+        setFile(compressed);
+        const reader = new FileReader();
+        reader.onloadend = () => setPreview(reader.result);
+        reader.readAsDataURL(compressed);
+        toast.success('Image optimized!', { id: loadingToast });
+      } catch (error) {
+        toast.error('Failed to process image', { id: loadingToast });
+        console.error(error);
+      }
     }
   };
 
@@ -212,13 +234,16 @@ const EditProduct = () => {
                 <span className="text-xs font-black uppercase tracking-[0.22em] text-[#8d0000]">
                   Badge / Tag <span className="normal-case font-normal tracking-normal text-[#958783]">(optional)</span>
                 </span>
-                <input
-                  type="text"
-                  value={formData.badge}
-                  onChange={e => updateField('badge', e.target.value)}
-                  placeholder="e.g. Best Seller, New Arrival"
-                  className="h-12 w-full rounded-lg border border-[#e4d5cf] bg-[#fafafa] px-4 text-sm text-[#201514] outline-none transition placeholder:text-[#958783] focus:border-[#9a1515] focus:bg-white"
-                />
+                <div className="relative">
+                  <select
+                    value={formData.badge || 'None'}
+                    onChange={e => updateField('badge', e.target.value === 'None' ? '' : e.target.value)}
+                    className="h-12 w-full appearance-none rounded-lg border border-[#e4d5cf] bg-[#fafafa] px-4 text-sm text-[#253040] outline-none transition focus:border-[#9a1515] focus:bg-white"
+                  >
+                    {BADGE_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#52606d]" />
+                </div>
               </label>
             </div>
           </section>

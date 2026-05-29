@@ -60,51 +60,51 @@ const App = () => {
                   <NotificationProvider>
                     <ReviewProvider>
                       <Suspense fallback={<PageFallback />}>
-                      <Routes>
-                        {/* Public Frontend Routes */}
-                        <Route path="/" element={<Layout />}> 
-                          <Route index element={<Home />} />
-                          <Route path="collections" element={<Collections />} />
-                          <Route path="gifts-by-occasion" element={<GiftsByOccasion />} />
-                          <Route path="personalized" element={<Personalized />} />
-                          <Route path="our-story" element={<OurStory />} />
-                          <Route path="product/:id" element={<ProductDetail />} />
-                          <Route path="cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-                          <Route path="checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-                          <Route path="success" element={<ProtectedRoute><Success /></ProtectedRoute>} />
-                          <Route path="my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
-                        </Route>
-        
-                        {/* Admin Routes */}
-                        <Route path="/admin" element={
-                          <AdminRoute>
-                            <AdminProvider>
-                              <AdminLayout />
-                            </AdminProvider>
-                          </AdminRoute>
-                        }>
-                          <Route index element={<Navigate to="/admin/dashboard" replace />} />
-                          <Route path="dashboard" element={<AdminDashboard />} />
-                          <Route path="products" element={<AdminProducts />} />
-                          <Route path="products/add" element={<AdminAddProduct />} />
-                          <Route path="products/edit/:id" element={<AdminEditProduct />} />
-                          <Route path="orders" element={<AdminOrders />} />
-                          <Route path="users" element={<AdminUsers />} />
-                          <Route path="expenses" element={<AdminExpenses />} />
-                          <Route path="occasions" element={<AdminOccasions />} />
-                          <Route path="occasions/add" element={<AdminAddOccasion />} />
-                          <Route path="occasions/edit/:id" element={<AdminEditOccasion />} />
-                          <Route path="notifications" element={<AdminNotifications />} />
-                        </Route>
+                        <Routes>
+                          {/* Public Frontend Routes */}
+                          <Route path="/" element={<Layout />}>
+                            <Route index element={<Home />} />
+                            <Route path="collections" element={<Collections />} />
+                            <Route path="gifts-by-occasion" element={<GiftsByOccasion />} />
+                            <Route path="personalized" element={<Personalized />} />
+                            <Route path="our-story" element={<OurStory />} />
+                            <Route path="product/:id" element={<ProductDetail />} />
+                            <Route path="cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+                            <Route path="checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                            <Route path="success" element={<ProtectedRoute><Success /></ProtectedRoute>} />
+                            <Route path="my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+                            <Route path="*" element={<NotFound />} />
+                          </Route>
 
-                        {/* Catch All - 404 */}
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </Suspense>
+                          {/* Admin Routes */}
+                          <Route path="/admin" element={
+                            <AdminRoute>
+                              <AdminProvider>
+                                <AdminLayout />
+                              </AdminProvider>
+                            </AdminRoute>
+                          }>
+                            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                            <Route path="dashboard" element={<AdminDashboard />} />
+                            <Route path="products" element={<AdminProducts />} />
+                            <Route path="products/add" element={<AdminAddProduct />} />
+                            <Route path="products/edit/:id" element={<AdminEditProduct />} />
+                            <Route path="orders" element={<AdminOrders />} />
+                            <Route path="users" element={<AdminUsers />} />
+                            <Route path="expenses" element={<AdminExpenses />} />
+                            <Route path="occasions" element={<AdminOccasions />} />
+                            <Route path="occasions/add" element={<AdminAddOccasion />} />
+                            <Route path="occasions/edit/:id" element={<AdminEditOccasion />} />
+                            <Route path="notifications" element={<AdminNotifications />} />
+                          </Route>
+
+
+                        </Routes>
+                      </Suspense>
                     </ReviewProvider>
                   </NotificationProvider>
                 </CartProvider>
-            </OrderProvider>
+              </OrderProvider>
             </OccasionProvider>
           </ProductProvider>
         </LazyClerkProvider>

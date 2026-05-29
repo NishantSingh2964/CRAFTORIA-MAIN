@@ -96,7 +96,6 @@ export const OrderProvider = ({ children }) => {
 
     const deleteOrder = async (orderId) => {
         try {
-            setLoading(true);
             const token = await getToken();
             await api.delete(`/orders/admin/${orderId}`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -105,8 +104,6 @@ export const OrderProvider = ({ children }) => {
             return { success: true };
         } catch (err) {
             return { success: false, error: err.response?.data?.message || 'Failed to delete order' };
-        } finally {
-            setLoading(false);
         }
     };
 

@@ -487,9 +487,16 @@ const Collections = () => {
                     </h3>
                     
                     {/* Price details */}
-                    <div className="flex items-baseline gap-2.5 mb-5 mt-auto">
+                    <div className="flex items-center gap-2.5 mb-5 mt-auto">
                       <span className="font-sans text-[#760000] font-extrabold text-[15px] sm:text-base">₹{prod.currentPrice}</span>
-                      <span className="font-sans text-gray-400 line-through text-[12px] sm:text-[13px] font-normal">₹{prod.originalPrice}</span>
+                      {Number(prod.originalPrice) > Number(prod.currentPrice) && (
+                        <>
+                          <span className="font-sans text-gray-400 line-through text-[12px] sm:text-[13px] font-normal whitespace-nowrap">₹{prod.originalPrice}</span>
+                          <span className="font-sans text-red-600 font-bold text-[10px] sm:text-[11px] bg-red-50 px-2 py-0.5 rounded-md whitespace-nowrap">
+                            {Math.round(((Number(prod.originalPrice) - Number(prod.currentPrice)) / Number(prod.originalPrice)) * 100)}% OFF
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     {/* CTA Button */}

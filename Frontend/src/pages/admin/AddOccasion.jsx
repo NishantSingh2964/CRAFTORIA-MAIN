@@ -3,6 +3,7 @@ import { ChevronDown, Loader2, Save, Upload, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useOccasions } from '../../contexts/OccasionContext';
 import toast from 'react-hot-toast';
+import { compressImage } from '../../utils/imageCompressor';
 
 const AddOccasion = () => {
   const navigate = useNavigate();
@@ -22,13 +23,21 @@ const AddOccasion = () => {
     setFormData((current) => ({ ...current, [key]: value }));
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result);
-      reader.readAsDataURL(selectedFile);
+      const loadingToast = toast.loading('Optimizing image for speed...');
+      try {
+        const compressed = await compressImage(selectedFile, 1600); // Higher width for occasion banners
+        setFile(compressed);
+        const reader = new FileReader();
+        reader.onloadend = () => setPreview(reader.result);
+        reader.readAsDataURL(compressed);
+        toast.success('Image optimized!', { id: loadingToast });
+      } catch (error) {
+        toast.error('Failed to process image', { id: loadingToast });
+        console.error(error);
+      }
     }
   };
 

@@ -30,7 +30,7 @@ const Occasions = () => {
       </div>
 
       <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5 sm:gap-6">
-        {occasions.map((occasion) => (
+        {occasions.slice(0, 6).map((occasion) => (
           <Link key={occasion._id} to={`/collections?occasion=${encodeURIComponent(occasion.filter)}`} className="group relative rounded-xl overflow-hidden cursor-pointer aspect-square bg-gray-100 shadow-sm">
             <img 
               src={occasion.image} 

@@ -167,7 +167,6 @@ const MyOrders = () => {
       <section className="relative h-[320px] sm:h-[360px] flex items-center overflow-hidden bg-white">
         <div className="absolute inset-0 z-0">
           <img src={hero2} alt="" className="w-full h-full object-cover object-right" />
-          <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/75 to-white/25 pointer-events-none" />
         </div>
         <div className="site-container relative z-10 w-full pt-20">
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-gray-900 tracking-tight mb-3">

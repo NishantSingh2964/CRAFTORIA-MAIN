@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { generateBasketImage } from '../services/aiService';
+import { useProducts } from '../contexts/ProductContext';
 import { useCart } from '../contexts/CartContext';
 import { formatPrice } from '../utils/formatPrice';
 
@@ -18,9 +19,9 @@ import ArtisanalRevealModal from '../components/Personalized/ArtisanalRevealModa
 
 // Data
 import { 
-  basketProducts, 
-  personalizedProducts, 
-  categories, 
+  basketProducts,
+  personalizedProducts,
+  categories,
   emptyContactForm 
 } from '../components/Personalized/data';
 
@@ -33,6 +34,15 @@ const Personalized = () => {
   const [aiGeneratedImages, setAiGeneratedImages] = useState([]);
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { products: allProducts, fetchProducts, loading: productsLoading } = useProducts();
+
+  useEffect(() => {
+    if (allProducts.length === 0) fetchProducts();
+  }, []);
+
+  // Reverted to hardcoded data
+  const basketProductsList = basketProducts;
+  const dynamicCategories = categories;
 
   useEffect(() => {
     if (aiGeneratedImages.length > 0) {
@@ -56,16 +66,20 @@ const Personalized = () => {
   }, [aiGeneratedImages]);
 
   const selectedItems = basketItems
-    .map((basketItem) => ({
-      ...basketProducts.find((item) => item.id === basketItem.id),
-      quantity: basketItem.quantity,
-    }))
+    .map((basketItem) => {
+      const product = basketProductsList.find((item) => item.id === basketItem.id);
+      if (!product) return null;
+      return {
+        ...product,
+        quantity: basketItem.quantity,
+      };
+    })
     .filter(Boolean);
 
   const filteredBasketProducts =
     activeCategory === 'All'
-      ? basketProducts
-      : basketProducts.filter((item) => item.category === activeCategory);
+      ? basketProductsList
+      : basketProductsList.filter((item) => item.category === activeCategory);
 
   const basketTotal = selectedItems.reduce((total, item) => total + item.price * item.quantity, 0);
   const basketWeight = selectedItems.reduce((total, item) => total + item.weight * item.quantity, 0);
@@ -144,10 +158,11 @@ const Personalized = () => {
         <BasketBuilder 
            basket={basket}
            basketItems={basketItems}
-           categories={categories}
+           categories={dynamicCategories}
            activeCategory={activeCategory}
            onCategoryChange={setActiveCategory}
            products={filteredBasketProducts}
+           productsLoading={productsLoading}
            selectedItems={selectedItems}
            basketTotal={basketTotal}
            basketWeight={basketWeight}

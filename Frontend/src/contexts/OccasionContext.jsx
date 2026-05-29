@@ -66,7 +66,6 @@ export const OccasionProvider = ({ children }) => {
 
     const deleteOccasion = async (id) => {
         try {
-            setLoading(true);
             const token = await getAuthToken();
             await api.delete(`/occasions/admin/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -75,8 +74,6 @@ export const OccasionProvider = ({ children }) => {
             return { success: true };
         } catch (err) {
             return { success: false, error: 'Failed to delete occasion' };
-        } finally {
-            setLoading(false);
         }
     };
 

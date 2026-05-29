@@ -127,34 +127,34 @@ const OurStory = () => {
           <div className="relative p-6 sm:p-10 lg:p-12 flex flex-col justify-center overflow-hidden">
             <div className="absolute -left-16 -bottom-16 h-44 w-44 rounded-full bg-red-100/45 blur-3xl" />
             <div className="relative z-10">
-            <span className="section-eyebrow">What Makes Us Special</span>
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-[2.65rem] font-bold tracking-tight leading-tight text-gray-950 mb-5">
-              Gifts That Come<br />
-              From the <span className="text-[#760000]">Heart</span>
-            </h2>
-            <p className="body-copy-sm text-gray-700 mb-7 max-w-sm">
-              We go beyond just products. We deliver emotions, thoughtfully wrapped with care and love.
-            </p>
-            <Link to="/collections" className="inline-flex items-center gap-3 bg-[#760000] text-white action-link px-7 py-4 rounded-sm w-max hover:bg-[#760000] transition">
-              <Icon><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7" /><path d="M2 7h20v5H2z" /><path d="M12 22V7" /></Icon>
-              Shop Now
-            </Link>
+              <span className="section-eyebrow">What Makes Us Special</span>
+              <h2 className="font-serif text-3xl sm:text-4xl md:text-[2.65rem] font-bold tracking-tight leading-tight text-gray-950 mb-5">
+                Gifts That Come<br />
+                From the <span className="text-[#760000]">Heart</span>
+              </h2>
+              <p className="body-copy-sm text-gray-700 mb-7 max-w-sm">
+                We go beyond just products. We deliver emotions, thoughtfully wrapped with care and love.
+              </p>
+              <Link to="/collections" className="inline-flex items-center gap-3 bg-[#760000] text-white action-link px-7 py-4 rounded-sm w-max hover:bg-[#760000] transition">
+                <Icon><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7" /><path d="M2 7h20v5H2z" /><path d="M12 22V7" /></Icon>
+                Shop Now
+              </Link>
             </div>
           </div>
           <div className="p-4 sm:p-6 lg:p-8 flex items-center">
-          <div className="w-full grid sm:grid-cols-2 lg:grid-cols-3 bg-white/80 backdrop-blur-sm rounded-xl border border-red-100/70 shadow-[0_12px_34px_rgba(118,0,0,0.05)] overflow-hidden">
-            {features.map(([title, text, icon]) => (
-              <div key={title} className="group p-5 lg:p-7 border-t sm:border-l border-red-100/70 flex gap-4 items-start transition-colors hover:bg-white">
-                <div className="h-11 w-11 rounded-full bg-red-50 border border-red-100 flex items-center justify-center text-[#760000] shrink-0 transition-all group-hover:bg-[#760000] group-hover:text-white group-hover:shadow-[0_10px_24px_rgba(118,0,0,0.18)]">
-                  <Icon>{icon}</Icon>
+            <div className="w-full grid sm:grid-cols-2 lg:grid-cols-3 bg-white/80 backdrop-blur-sm rounded-xl border border-red-100/70 shadow-[0_12px_34px_rgba(118,0,0,0.05)] overflow-hidden">
+              {features.map(([title, text, icon]) => (
+                <div key={title} className="group p-5 lg:p-7 border-t sm:border-l border-red-100/70 flex gap-4 items-start transition-colors hover:bg-white">
+                  <div className="h-11 w-11 rounded-full bg-red-50 border border-red-100 flex items-center justify-center text-[#760000] shrink-0 transition-all group-hover:bg-[#760000] group-hover:text-white group-hover:shadow-[0_10px_24px_rgba(118,0,0,0.18)]">
+                    <Icon>{icon}</Icon>
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-[13px] font-semibold text-gray-950 mb-2 tracking-[0.02em]">{title}</h3>
+                    <p className="font-sans text-[12.5px] leading-relaxed text-gray-500 font-normal">{text}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-heading text-[13px] font-semibold text-gray-950 mb-2 tracking-[0.02em]">{title}</h3>
-                  <p className="font-sans text-[12.5px] leading-relaxed text-gray-500 font-normal">{text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
           </div>
         </section>
 

@@ -64,20 +64,28 @@ const ProductDetail = () => {
   useEffect(() => {
     const loadProduct = async () => {
       setLoading(true);
-      const res = await fetchProductById(id);
-      if (res.success) {
-        setProduct(res.data);
-        await Promise.all([
+      try {
+        // Parallelize fetching to reduce total wait time
+        const [res] = await Promise.all([
+          fetchProductById(id),
           fetchReviewsByProduct(id),
-          fetchProducts()
+          // Only fetch global products if they aren't already loaded in context
+          products.length === 0 ? fetchProducts() : Promise.resolve()
         ]);
-      } else {
-        setError(res.error);
+
+        if (res.success) {
+          setProduct(res.data);
+        } else {
+          setError(res.error);
+        }
+      } catch (err) {
+        setError('An unexpected error occurred');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     loadProduct();
-  }, [id]);
+  }, [id, products.length]);
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();

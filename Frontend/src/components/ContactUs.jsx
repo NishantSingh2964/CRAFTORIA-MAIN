@@ -20,7 +20,7 @@ const ContactUs = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
-    
+
     if (!accessKey) {
       toast.error('Configuration error: missing access key');
       return;
@@ -42,7 +42,7 @@ const ContactUs = () => {
         body: formData
       });
       const result = await response.json();
-      
+
       if (result.success) {
         toast.success('Thank you! We will get back to you shortly.', { id: loadingToast });
         setForm({ name: '', email: '', message: '' });
@@ -74,10 +74,10 @@ const ContactUs = () => {
           {/* Left Column: Branding & Info */}
           <div className="space-y-12">
             <div>
-              <span className="text-[10px] font-bold text-red-600 uppercase tracking-[0.3em] mb-4 block">Get In Touch</span>
-              <h2 className="font-serif text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
+              <span className="section-eyebrow">Get In Touch</span>
+              <h2 className="section-title">
                 Let Us Help You <br />
-                <span className="text-[#760000] italic">Curate Perfection.</span>
+                <span className="text-[#760000]">Curate Perfection.</span>
               </h2>
               <p className="mt-6 text-gray-500 max-w-md leading-relaxed">
                 Whether it's a bulk order, a custom engraving, or just a simple query, our experts are here to assist you.
@@ -165,7 +165,7 @@ const ContactUs = () => {
                 />
               </div>
 
-              <button 
+              <button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full bg-[#760000] text-white py-5 rounded-2xl font-bold uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 hover:bg-black transition-all group disabled:opacity-50 disabled:cursor-not-allowed"

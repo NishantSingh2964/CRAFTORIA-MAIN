@@ -56,8 +56,8 @@ const CustomerFavorites = () => {
                 className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-95"
               />
               
-              {/* Glassmorphic Blur Overlay on Hover */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/5 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-5 z-10">
+              {/* Glassmorphic Light Overlay on Hover */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent backdrop-blur-[1.5px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-5 z-10">
                 <h4 className="font-serif text-white font-semibold text-base mb-2 line-clamp-2 leading-snug">
                   {product.name}
                 </h4>
