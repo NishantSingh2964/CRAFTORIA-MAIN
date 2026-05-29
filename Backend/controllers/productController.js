@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const Review = require('../models/Review');
 
 exports.getProducts = async (req, res, next) => {
     try {
@@ -7,24 +8,44 @@ exports.getProducts = async (req, res, next) => {
 
         // Filtering
         if (category) query.category = category;
-        if (occasion) query.occasions = occasion; // occasion ID
+        if (occasion) {
+            const mongoose = require('mongoose');
+            if (mongoose.Types.ObjectId.isValid(occasion)) {
+                query.occasions = new mongoose.Types.ObjectId(occasion);
+            }
+        }
+
         if (minPrice || maxPrice) {
             query.currentPrice = {};
             if (minPrice) query.currentPrice.$gte = Number(minPrice);
             if (maxPrice) query.currentPrice.$lte = Number(maxPrice);
         }
 
-        let productsQuery = Product.find(query).populate('occasions', 'name filter');
-
-        // Sorting
-        if (sort) {
-            const sortBy = sort.split(',').join(' ');
-            productsQuery = productsQuery.sort(sortBy);
-        } else {
-            productsQuery = productsQuery.sort('-createdAt');
-        }
-
-        const products = await productsQuery;
+        // Use aggregation to count reviews for each product
+        const products = await Product.aggregate([
+            { $match: query },
+            {
+                $lookup: {
+                    from: 'reviews', // The name of the reviews collection
+                    localField: '_id',
+                    foreignField: 'product',
+                    as: 'all_reviews'
+                }
+            },
+            {
+                $addFields: {
+                    reviewCount: { $size: '$all_reviews' }
+                }
+            },
+            {
+                $project: {
+                    all_reviews: 0 // We don't need the actual review objects here, just the count
+                }
+            },
+            {
+                $sort: sort ? { [sort.startsWith('-') ? sort.slice(1) : sort]: sort.startsWith('-') ? -1 : 1 } : { createdAt: -1 }
+            }
+        ]);
 
         res.status(200).json({
             success: true,

@@ -4,6 +4,7 @@ import LazyMount from '../components/LazyMount';
 
 const Categories = lazy(() => import('../components/Categories'));
 const CustomerFavorites = lazy(() => import('../components/CustomerFavorites'));
+const MostReviewedProducts = lazy(() => import('../components/MostReviewedProducts'));
 const PromoBanner = lazy(() => import('../components/PromoBanner'));
 const Occasions = lazy(() => import('../components/Occasions'));
 const Features = lazy(() => import('../components/Features'));
@@ -31,6 +32,12 @@ const Home = () => {
       <LazyMount minHeight="400px">
         <Suspense fallback={<SectionFallback tall />}>
           <CustomerFavorites />
+        </Suspense>
+      </LazyMount>
+
+      <LazyMount minHeight="400px">
+        <Suspense fallback={<SectionFallback tall />}>
+          <MostReviewedProducts />
         </Suspense>
       </LazyMount>
 

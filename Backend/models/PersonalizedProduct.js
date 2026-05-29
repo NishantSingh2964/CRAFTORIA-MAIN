@@ -42,6 +42,10 @@ const personalizedProductSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    testimonials: [{
+        user: String,
+        comment: String
+    }],
     personalizationType: {
         type: String,
         enum: ['Text', 'Photo', 'Both', 'None'],
