@@ -134,12 +134,19 @@ const Collections = () => {
       .filter((prod) => {
         // 3. Occasions Filtration
         if (selectedOccasions.length === 0) return true;
-        const prodOccasions = prod.occasions || []; // Backend may have an array of occasions
-        const prodOccasionName = (prod.occasion || '').toLowerCase(); // Or a single string
+        const prodOccasions = prod.occasions || []; 
+        const prodOccasionName = String(prod.occasion || '').toLowerCase(); 
 
         return selectedOccasions.some(occ => {
-          const occLower = occ.toLowerCase();
-          return prodOccasions.some(o => o.toLowerCase() === occLower) || prodOccasionName === occLower;
+          const occLower = String(occ || '').toLowerCase();
+          
+          // Check in array (could be strings or populated objects)
+          const matchesInArray = prodOccasions.some(o => {
+            const name = typeof o === 'object' ? o?.name : o;
+            return String(name || '').toLowerCase() === occLower;
+          });
+
+          return matchesInArray || prodOccasionName === occLower;
         });
       });
   }, [products, selectedCategory, selectedOccasions, priceRange, searchQuery]);
