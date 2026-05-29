@@ -21,7 +21,7 @@ exports.getProducts = async (req, res, next) => {
             if (maxPrice) query.currentPrice.$lte = Number(maxPrice);
         }
 
-        // Use aggregation to count reviews for each product
+        // Use aggregation to count reviews and populate occasions
         const products = await Product.aggregate([
             { $match: query },
             {
@@ -39,6 +39,14 @@ exports.getProducts = async (req, res, next) => {
                 }
             },
             {
+                $lookup: {
+                    from: 'occasions',
+                    localField: 'occasions',
+                    foreignField: '_id',
+                    as: 'occasions_details'
+                }
+            },
+            {
                 $addFields: {
                     reviewCount: { $size: '$all_reviews' },
                     averageRating: { 
@@ -52,14 +60,18 @@ exports.getProducts = async (req, res, next) => {
                             }, 
                             1
                         ]
-                    }
+                    },
+                    // Map back to the expected array format for the frontend
+                    occasions: '$occasions_details'
                 }
             },
             {
                 $project: {
-                    all_reviews: 0
+                    all_reviews: 0,
+                    occasions_details: 0
                 }
-            },{
+            },
+            {
                 $sort: sort ? { [sort.startsWith('-') ? sort.slice(1) : sort]: sort.startsWith('-') ? -1 : 1 } : { createdAt: -1 }
             }
         ]);

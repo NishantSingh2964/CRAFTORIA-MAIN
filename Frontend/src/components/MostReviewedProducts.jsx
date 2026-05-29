@@ -46,7 +46,7 @@ const MostReviewedProducts = () => {
             Loved by Thousands
           </span>
           <h2 className="section-title">
-            Top Rated & Most Reviewed
+            Most Admired Collection
           </h2>
         </div>
         <Link
@@ -74,9 +74,8 @@ const MostReviewedProducts = () => {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
-                className={`absolute top-5 right-5 p-2.5 rounded-full shadow-md transition-all duration-300 z-20 hover:scale-110 active:scale-95 ${
-                    isInWishlist(product._id) ? 'bg-white text-red-600' : 'bg-white/95 backdrop-blur-sm text-gray-400 hover:text-red-700 hover:bg-white'
-                }`}
+                className={`absolute top-5 right-5 p-2.5 rounded-full shadow-md transition-all duration-300 z-20 hover:scale-110 active:scale-95 ${isInWishlist(product._id) ? 'bg-white text-red-600' : 'bg-white/95 backdrop-blur-sm text-gray-400 hover:text-red-700 hover:bg-white'
+                  }`}
                 aria-label={`${isInWishlist(product._id) ? 'Remove' : 'Add'} ${product.name} to wishlist`}
               >
                 <svg
