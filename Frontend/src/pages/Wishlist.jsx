@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, ArrowRight, CheckCircle2, Gift, Headphones, Heart, Pencil, Share2, Trash2, Truck, Image as ImageIcon } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Gift, Heart, Pencil, Share2, Trash2, Truck, Image as ImageIcon } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { formatPrice } from '../utils/formatPrice';
@@ -66,7 +66,7 @@ const Wishlist = () => {
         <img
           src={wishlistHero}
           alt=""
-          className="pointer-events-none absolute inset-0 h-full w-full object-fill"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[8%_center] sm:object-[center_45%]"
           aria-hidden="true"
         />
 

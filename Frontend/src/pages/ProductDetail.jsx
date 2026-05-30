@@ -5,6 +5,7 @@ import { useProducts } from '../contexts/ProductContext';
 import { usePersonalized } from '../contexts/PersonalizedContext';
 import { useCart } from '../contexts/CartContext';
 import { useReviews } from '../contexts/ReviewContext';
+import { useWishlist } from '../contexts/WishlistContext';
 import { useUser } from '@clerk/clerk-react';
 import toast from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
@@ -57,6 +58,7 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
   const { reviews, fetchReviewsByProduct, submitReview, deleteReview, loading: reviewsLoading } = useReviews();
   const { user, isSignedIn } = useUser();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -272,8 +274,21 @@ const ProductDetail = () => {
                 </div>
               )}
 
-              <button type="button" className="absolute right-5 top-5 h-12 w-12 rounded-full bg-white text-[#760000] shadow-lg flex items-center justify-center hover:scale-105 transition" aria-label="Add to wishlist">
-                <Icon className="h-6 w-6"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></Icon>
+              <button
+                type="button"
+                onClick={() => {
+                  toggleWishlist(product);
+                  toast.success(isInWishlist(product._id) ? 'Removed from wishlist' : 'Added to wishlist');
+                }}
+                className="absolute right-5 top-5 h-12 w-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-105 transition"
+                aria-label={isInWishlist(product._id) ? 'Remove from wishlist' : 'Add to wishlist'}
+              >
+                <Heart
+                  className="h-6 w-6"
+                  strokeWidth={1.8}
+                  fill={isInWishlist(product._id) ? '#760000' : 'none'}
+                  stroke={isInWishlist(product._id) ? '#760000' : '#760000'}
+                />
               </button>
             </div>
 
@@ -468,9 +483,23 @@ const ProductDetail = () => {
                     </div>
                   )}
 
-                  <span className="absolute right-3 top-3 h-9 w-9 rounded-full bg-white text-[#760000] flex items-center justify-center shadow-md">
-                    <Icon className="h-5 w-5"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></Icon>
-                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleWishlist(item);
+                      toast.success(isInWishlist(item._id) ? 'Removed from wishlist' : 'Added to wishlist');
+                    }}
+                    className="absolute right-3 top-3 h-9 w-9 rounded-full bg-white flex items-center justify-center shadow-md hover:scale-105 transition"
+                    aria-label={isInWishlist(item._id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                  >
+                    <Heart
+                      className="h-4 w-4"
+                      strokeWidth={1.8}
+                      fill={isInWishlist(item._id) ? '#760000' : 'none'}
+                      stroke="#760000"
+                    />
+                  </button>
                 </div>
                 <h3 className="card-title mb-3 line-clamp-1">{item.name}</h3>
 
