@@ -192,7 +192,7 @@ const AddProduct = () => {
                 />
               </label>
 
-              {/* Category + Stock */}
+              {/* Category + Personalization */}
               <div className="grid gap-5 md:grid-cols-2">
                 <label className="block space-y-2">
                   <span className="text-xs font-black uppercase tracking-[0.22em] text-[#8d0000]">Category</span>
@@ -221,7 +221,10 @@ const AddProduct = () => {
                     <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#52606d]" />
                   </div>
                 </label>
+              </div>
 
+              {/* Stock Quantity + Badge/Tag */}
+              <div className="grid gap-5 md:grid-cols-2">
                 <label className="block space-y-2">
                   <span className="text-xs font-black uppercase tracking-[0.22em] text-[#8d0000]">Stock Quantity</span>
                   <input
@@ -234,21 +237,21 @@ const AddProduct = () => {
                     className="h-12 w-full rounded-lg border border-[#e4d5cf] bg-[#fafafa] px-4 text-sm text-[#201514] outline-none transition placeholder:text-[#958783] focus:border-[#9a1515] focus:bg-white"
                   />
                 </label>
-              </div>
 
-              <label className="block space-y-2">
-                <span className="text-xs font-black uppercase tracking-[0.22em] text-[#8d0000]">Badge / Tag <span className="text-[#958783] normal-case font-normal tracking-normal">(optional)</span></span>
-                <div className="relative">
-                  <select
-                    value={formData.badge}
-                    onChange={e => updateField('badge', e.target.value === 'None' ? '' : e.target.value)}
-                    className="h-12 w-full appearance-none rounded-lg border border-[#e4d5cf] bg-[#fafafa] px-4 text-sm text-[#253040] outline-none transition focus:border-[#9a1515] focus:bg-white"
-                  >
-                    {BADGE_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#52606d]" />
-                </div>
-              </label>
+                <label className="block space-y-2">
+                  <span className="text-xs font-black uppercase tracking-[0.22em] text-[#8d0000]">Badge / Tag <span className="text-[#958783] normal-case font-normal tracking-normal">(optional)</span></span>
+                  <div className="relative">
+                    <select
+                      value={formData.badge}
+                      onChange={e => updateField('badge', e.target.value === 'None' ? '' : e.target.value)}
+                      className="h-12 w-full appearance-none rounded-lg border border-[#e4d5cf] bg-[#fafafa] px-4 text-sm text-[#253040] outline-none transition focus:border-[#9a1515] focus:bg-white"
+                    >
+                      {BADGE_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#52606d]" />
+                  </div>
+                </label>
+              </div>
             </div>
           </section>
 

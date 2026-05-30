@@ -309,6 +309,7 @@ const EditProduct = () => {
                   </div>
                 </label>
               </div>
+            </div>
           </section>
 
           {/* Pricing */}
