@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, ArrowRight, CheckCircle2, Gift, Headphones, Heart, Pencil, Share2, Trash2, Truck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Gift, Headphones, Heart, Pencil, Share2, Trash2, Truck, Image as ImageIcon } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { formatPrice } from '../utils/formatPrice';
@@ -177,6 +177,21 @@ const Wishlist = () => {
                           loading="lazy"
                           decoding="async"
                         />
+
+                        {/* Personalization Badge Overlay */}
+                        {product.personalizationType && product.personalizationType !== 'None' && (
+                          <div className="absolute top-4 left-4 z-20">
+                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-red-100/50 text-[9px] font-bold uppercase tracking-wider text-[#760000] shadow-sm">
+                              {product.personalizationType === 'Both' ? '✨ Personalizable' : 
+                              product.personalizationType === 'Text' ? (
+                                <><Pencil className="h-2.5 w-2.5" /> Text Only</>
+                              ) : (
+                                <><ImageIcon className="h-2.5 w-2.5" /> Photo Only</>
+                              )}
+                            </span>
+                          </div>
+                        )}
+
                         <button
                           type="button"
                           onClick={(event) => {

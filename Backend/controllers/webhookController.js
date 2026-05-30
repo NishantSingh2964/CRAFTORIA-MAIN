@@ -53,6 +53,8 @@ exports.handleStripeWebhook = async (req, res) => {
             order.receiptUrl = receiptUrl;
             await order.save();
 
+            console.log(`✅ Order ${metadata.orderNumber} status updated to PAID.`);
+
             // 2. Decrement Inventory
             for (const item of order.items) {
                 await Product.findByIdAndUpdate(item.productId, {
@@ -60,7 +62,7 @@ exports.handleStripeWebhook = async (req, res) => {
                 });
             }
             
-            console.log(`Order ${metadata.orderNumber} updated to Paid and inventory adjusted.`);
+            console.log(`📦 Inventory adjusted for order ${metadata.orderNumber}.`);
 
             // Trigger Notification
             await Notification.create({
@@ -70,11 +72,17 @@ exports.handleStripeWebhook = async (req, res) => {
             });
 
             // Send Emails
+            console.log(`📧 Initiating emails for ${order.customerEmail}...`);
             const { sendOrderConfirmationEmail, sendAdminOrderNotification } = require('../utils/emailService');
             
             // We run these in background (no await) or with try/catch to not block the webhook
-            sendOrderConfirmationEmail(order).catch(err => console.error('Error sending customer email:', err));
-            sendAdminOrderNotification(order).catch(err => console.error('Error sending admin email:', err));
+            sendOrderConfirmationEmail(order)
+                .then(() => console.log('✅ Customer confirmation email sent successfully'))
+                .catch(err => console.error('❌ Error sending customer email:', err.message));
+
+            sendAdminOrderNotification(order)
+                .then(() => console.log('✅ Admin notification email sent successfully'))
+                .catch(err => console.error('❌ Error sending admin email:', err.message));
 
         } catch (error) {
             console.error('Error processing order from webhook:', error);

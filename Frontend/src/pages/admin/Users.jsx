@@ -13,6 +13,7 @@ import {
 import { useAdmin } from '../../contexts/AdminContext';
 import toast from 'react-hot-toast';
 import Pagination from '../../components/admin/Pagination';
+import UserAccountModal from '../../components/admin/UserAccountModal';
 
 const avatarColors = [
   'bg-[#fde8e3] text-[#9a1515]',
@@ -46,6 +47,7 @@ const UserList = () => {
   const [role, setRole] = useState('All Roles');
   const [status, setStatus] = useState('All Status');
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedUser, setSelectedUser] = useState(null);
   const usersPerPage = 10;
 
   useEffect(() => {
@@ -262,7 +264,12 @@ const UserList = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-3">
-                        <button type="button" className="grid h-10 w-10 place-items-center rounded-lg border border-[#e4d5cf] text-[#171111] transition hover:border-[#9a1515] hover:text-[#9a1515]" aria-label={`View ${user.name || user.email}`}>
+                        <button 
+                          type="button" 
+                          onClick={() => setSelectedUser(user)}
+                          className="grid h-10 w-10 place-items-center rounded-lg border border-[#e4d5cf] text-[#171111] transition hover:border-[#9a1515] hover:text-[#9a1515]" 
+                          aria-label={`View ${user.name || user.email}`}
+                        >
                           <Eye className="h-4 w-4" />
                         </button>
                         <button type="button" className="grid h-10 w-10 place-items-center rounded-lg border border-[#e4d5cf] text-[#8d0000] transition hover:border-[#9a1515] hover:bg-[#fff7f3]" aria-label={`More actions for ${user.name || user.email}`}>
@@ -285,6 +292,13 @@ const UserList = () => {
           />
         </div>
       </section>
+
+      {/* User Details Modal */}
+      <UserAccountModal 
+        user={selectedUser} 
+        isOpen={!!selectedUser} 
+        onClose={() => setSelectedUser(null)} 
+      />
     </div>
   );
 };

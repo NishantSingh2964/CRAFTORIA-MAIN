@@ -32,21 +32,30 @@ const WhatsAppIcon = ({ className = 'h-4 w-4' }) => (
 const OrderSummary = ({ cartItems, primaryLabel, primaryTo, onPrimaryClick, stickyTop = 'xl:top-24' }) => {
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  const { subtotal, discount, total, savings } = useMemo(() => {
+  const { subtotal, discount, total, savings, customizationFee } = useMemo(() => {
     const originalTotal = cartItems.reduce(
       (sum, item) => sum + parsePrice(item.originalPrice) * item.quantity,
       0
     );
+    // Sum customization fees separately — they must NOT affect the discount calculation
+    const customizationFee = cartItems.reduce(
+      (sum, item) => sum + (item.customization?.fee ? Number(item.customization.fee) * item.quantity : 0),
+      0
+    );
+    // payableTotal includes the customization fee (this is what the customer actually pays)
     const payableTotal = cartItems.reduce(
       (sum, item) => sum + parsePrice(item.currentPrice) * item.quantity,
       0
     );
-    const itemDiscount = Math.max(0, originalTotal - payableTotal);
+    // Discount = original price minus sale price (EXCLUDING the customization fee)
+    const saleTotal = payableTotal - customizationFee;
+    const itemDiscount = Math.max(0, originalTotal - saleTotal);
     return {
       subtotal: originalTotal,
       discount: itemDiscount,
       total: payableTotal,
       savings: itemDiscount,
+      customizationFee,
     };
   }, [cartItems]);
 
@@ -74,6 +83,14 @@ const OrderSummary = ({ cartItems, primaryLabel, primaryTo, onPrimaryClick, stic
           <div className="flex justify-between text-emerald-600">
             <span>Discount</span>
             <span className="font-semibold">− {formatPrice(discount)}</span>
+          </div>
+        )}
+        {customizationFee > 0 && (
+          <div className="flex justify-between text-[#760000]">
+            <span className="flex items-center gap-1">
+              <span>✨</span> Customization Fee
+            </span>
+            <span className="font-semibold">+ {formatPrice(customizationFee)}</span>
           </div>
         )}
         <div className="flex justify-between text-emerald-600">

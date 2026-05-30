@@ -9,14 +9,16 @@ import { useUser } from '@clerk/clerk-react';
 import toast from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
 import { compressImage } from '../utils/imageCompressor';
+import ProductFAQ from '../components/ProductFAQ';
+import PersonalizationModal from '../components/Personalized/PersonalizationModal';
 import touchImage from '../assets/home/Touch.png?w=800&format=webp&quality=80';
-import { 
-  Star, 
-  Users, 
-  MessageSquare, 
-  ShieldCheck, 
-  Pencil, 
-  MoreVertical, 
+import {
+  Star,
+  Users,
+  MessageSquare,
+  ShieldCheck,
+  Pencil,
+  MoreVertical,
   Heart,
   CheckCircle2,
   Trash2,
@@ -60,10 +62,7 @@ const ProductDetail = () => {
   const [error, setError] = useState(null);
 
   // Personalization State
-  const [personalizationText, setPersonalizationText] = useState('');
-  const [personalizationPhoto, setPersonalizationPhoto] = useState(null);
-  const [photoPreview, setPhotoPreview] = useState(null);
-  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [isPersonalizing, setIsPersonalizing] = useState(false);
 
   // Review Form State
   const [rating, setRating] = useState(5);
@@ -76,14 +75,11 @@ const ProductDetail = () => {
     const loadProduct = async () => {
       setLoading(true);
       try {
-        // try standard first
         const res = await fetchProductById(id);
-        
         if (res.success) {
           setProduct(res.data);
           fetchReviewsByProduct(id);
         } else {
-          // try personalized
           const persRes = await fetchPersonalizedProductById(id);
           if (persRes.success) {
             setProduct(persRes.data);
@@ -92,8 +88,6 @@ const ProductDetail = () => {
             setError(res.error || persRes.error);
           }
         }
-
-        // Always fetch global products if they aren't already loaded in context
         if (products.length === 0) fetchProducts();
       } catch (err) {
         setError('An unexpected error occurred');
@@ -110,12 +104,10 @@ const ProductDetail = () => {
       toast.error('Please sign in to leave a review');
       return;
     }
-
     if (!comment.trim()) {
       toast.error('Please write a comment');
       return;
     }
-
     setIsSubmitting(true);
     const result = await submitReview({
       productId: id,
@@ -124,7 +116,6 @@ const ProductDetail = () => {
       userName: user.fullName || user.firstName || 'Anonymous',
       userImage: user.imageUrl
     });
-
     if (result.success) {
       setComment('');
       setRating(5);
@@ -181,7 +172,7 @@ const ProductDetail = () => {
   };
 
   const essentials = [
-    `${product.category} signature gift`,
+    `${product.category || 'Gift'} signature gift`,
     'Personal message card included',
     'Premium gift-safe packaging',
     'Express delivery eligible',
@@ -242,6 +233,21 @@ const ProductDetail = () => {
               fetchPriority="high"
               decoding="async"
             />
+
+            {/* Main Personalization Badge Overlay */}
+            {product.personalizationType && product.personalizationType !== 'None' && (
+              <div className="absolute top-6 left-6 z-20">
+                <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/95 backdrop-blur-md border border-red-100/50 text-[10px] font-bold uppercase tracking-[0.1em] text-[#760000] shadow-xl">
+                  {product.personalizationType === 'Both' ? '✨ Fully Customizable Gift' :
+                    product.personalizationType === 'Text' ? (
+                      <><Pencil className="h-3 w-3" /> Text Personalize Ready</>
+                    ) : (
+                      <><ImageIcon className="h-3 w-3" /> Photo Personalize Ready</>
+                    )}
+                </span>
+              </div>
+            )}
+
             <button type="button" className="absolute right-5 top-5 h-14 w-14 rounded-full bg-white text-[#760000] shadow-lg flex items-center justify-center hover:scale-105 transition" aria-label="Add to wishlist">
               <Icon className="h-7 w-7"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></Icon>
             </button>
@@ -269,78 +275,28 @@ const ProductDetail = () => {
 
             <p className="body-copy text-[15px] text-gray-700 max-w-xl mb-7">{product.description}</p>
 
-            {/* Customization Fields */}
+            {/* Personalization Capability Banner */}
             {product.personalizationType && product.personalizationType !== 'None' && (
-              <div className="mb-8 p-6 rounded-2xl bg-[#fff9f8] border border-red-100 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
-                  <Pencil className="h-4 w-4 text-[#760000]" />
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-[#760000]">Personalize Your Gift</h3>
+              <div className="mb-7 rounded-lg border border-red-100 bg-gradient-to-r from-red-50 to-white px-5 py-4 flex items-start gap-4">
+                <div className="shrink-0 mt-0.5 w-9 h-9 rounded-md bg-[#760000] flex items-center justify-center text-white text-lg">
+                  {product.personalizationType === 'Both' ? '✨' : product.personalizationType === 'Text' ? '✍️' : '📸'}
                 </div>
-
-                {(product.personalizationType === 'Text' || product.personalizationType === 'Both') && (
-                  <div className="space-y-2 mb-4">
-                    <label className="flex items-center gap-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
-                      <Type className="h-3 w-3" />
-                      Your Message / Name
-                    </label>
-                    <input
-                      type="text"
-                      value={personalizationText}
-                      onChange={(e) => setPersonalizationText(e.target.value)}
-                      placeholder="Enter the name or message..."
-                      className="w-full h-12 px-4 rounded-lg border border-gray-200 focus:border-[#760000]/30 focus:ring-4 focus:ring-[#760000]/5 outline-none transition bg-white text-sm"
-                    />
-                  </div>
-                )}
-
-                {(product.personalizationType === 'Photo' || product.personalizationType === 'Both') && (
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
-                      <ImageIcon className="h-3 w-3" />
-                      Upload Photo
-                    </label>
-                    <div className="relative group">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            setIsOptimizing(true);
-                            try {
-                              const compressed = await compressImage(file);
-                              setPersonalizationPhoto(compressed);
-                              const reader = new FileReader();
-                              reader.onloadend = () => setPhotoPreview(reader.result);
-                              reader.readAsDataURL(compressed);
-                              toast.success('Photo uploaded!');
-                            } catch (err) {
-                              toast.error('Failed to process image');
-                            } finally {
-                              setIsOptimizing(false);
-                            }
-                          }
-                        }}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      />
-                      <div className={`h-24 w-full rounded-lg border-2 border-dashed flex flex-col items-center justify-center transition-all ${photoPreview ? 'border-green-200 bg-green-50' : 'border-red-100 bg-white group-hover:border-[#760000]/30'}`}>
-                        {isOptimizing ? (
-                          <p className="text-xs text-[#760000] animate-pulse font-bold">Optimizing Image...</p>
-                        ) : photoPreview ? (
-                          <div className="flex items-center gap-3 px-4">
-                            <img src={photoPreview} alt="Preview" className="h-16 w-16 rounded object-cover border border-white shadow-sm" />
-                            <p className="text-xs text-green-700 font-bold uppercase tracking-wider">Image Ready</p>
-                          </div>
-                        ) : (
-                          <>
-                            <ImageIcon className="h-5 w-5 text-gray-400 mb-1" />
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Tap to upload high-res photo</p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                <div>
+                  <p className="font-sans font-bold text-[11px] uppercase tracking-[0.15em] text-[#760000] mb-1">
+                    {product.personalizationType === 'Both'
+                      ? 'Fully Customizable Gift'
+                      : product.personalizationType === 'Text'
+                        ? 'Text Customizable Gift'
+                        : 'Image Customizable Gift'}
+                  </p>
+                  <p className="font-sans text-xs text-gray-600 leading-relaxed">
+                    {product.personalizationType === 'Both'
+                      ? 'You can add a personal message and upload photo to make this gift truly special.'
+                      : product.personalizationType === 'Text'
+                        ? 'You can add a personal name or heartfelt message to customize this gift.'
+                        : 'You can upload a cherished photo to be printed on this gift.'}
+                  </p>
+                </div>
               </div>
             )}
 
@@ -368,31 +324,16 @@ const ProductDetail = () => {
             </div>
 
             <div className="space-y-4">
-              <button 
-                type="button" 
-                onClick={() => { 
-                  if (product.personalizationType === 'Text' && !personalizationText) {
-                    toast.error('Please enter your custom text');
-                    return;
+              <button
+                type="button"
+                onClick={() => {
+                  if (product.personalizationType && product.personalizationType !== 'None') {
+                    setIsPersonalizing(true);
+                  } else {
+                    addToCart(product, quantity);
+                    toast.success('Product added successfully');
                   }
-                  if (product.personalizationType === 'Photo' && !personalizationPhoto) {
-                    toast.error('Please upload your photo');
-                    return;
-                  }
-                  if (product.personalizationType === 'Both' && (!personalizationText || !personalizationPhoto)) {
-                    toast.error('Please provide both text and photo');
-                    return;
-                  }
-
-                  addToCart({
-                    ...product,
-                    customization: {
-                      text: personalizationText,
-                      photo: photoPreview // Using preview for now, real app would upload to cloud first
-                    }
-                  }, quantity); 
-                  toast.success('Product added successfully'); 
-                }} 
+                }}
                 className="w-full h-14 rounded-md bg-[#760000] text-white action-link shadow-[0_12px_26px_rgba(118,0,0,0.22)] hover:bg-[#760000] transition"
               >
                 Add To Cart
@@ -474,11 +415,23 @@ const ProductDetail = () => {
               <Link key={item._id} to={`/product/${item._id}`} className="group">
                 <div className="relative aspect-[1.28] rounded-md overflow-hidden bg-red-50 mb-4">
                   <img src={item.image} alt={item.name} className="h-full w-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" decoding="async" />
+
+                  {/* Personalization Badge Overlay */}
+                  {item.personalizationType && item.personalizationType !== 'None' && (
+                    <div className="absolute top-3 left-3 z-20">
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm border border-red-100/50 text-[8px] font-bold uppercase tracking-wider text-[#760000] shadow-sm">
+                        {item.personalizationType === 'Both' ? '✨ Personalizable' :
+                          item.personalizationType === 'Text' ? '✍️ Text' : '📸 Photo'}
+                      </span>
+                    </div>
+                  )}
+
                   <span className="absolute right-3 top-3 h-9 w-9 rounded-full bg-white text-[#760000] flex items-center justify-center shadow-md">
                     <Icon className="h-5 w-5"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></Icon>
                   </span>
                 </div>
                 <h3 className="card-title mb-3 line-clamp-1">{item.name}</h3>
+
                 <div className="flex items-center gap-2 mb-5">
                   <span className="font-sans text-[#760000] font-extrabold">₹{item.currentPrice}</span>
                   <span className="font-sans text-gray-400 line-through text-sm font-normal">₹{item.originalPrice}</span>
@@ -492,23 +445,18 @@ const ProductDetail = () => {
         </section>
 
         <section className="mt-16 sm:mt-24">
-          {/* Reviews Header & Form Section */}
           <div className="grid lg:grid-cols-[1fr_400px] gap-12 items-start mb-16">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-100 mb-6">
                 <Heart className="h-3 w-3 fill-[#760000] text-[#760000]" />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-[#760000]">Customer Reviews</span>
               </div>
-              
               <h2 className="font-serif text-4xl sm:text-5xl lg:text-[3.5rem] font-bold leading-tight text-gray-900 mb-6">
                 Loved by <span className="text-[#760000]">CRAFTORIA</span> Customers
               </h2>
-              
               <p className="text-gray-500 text-lg leading-relaxed max-w-xl mb-10 font-sans italic">
                 Hear what our community says about their CRAFTORIA experience.
               </p>
-              
-              {/* Stats Cards */}
               <div className="flex flex-wrap gap-8 items-center">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full bg-[#760000]/5 flex items-center justify-center border border-[#760000]/10">
@@ -519,9 +467,7 @@ const ProductDetail = () => {
                     <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider font-semibold">Average Rating</p>
                   </div>
                 </div>
-                
                 <div className="w-px h-10 bg-gray-200 hidden sm:block"></div>
-                
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full bg-[#760000]/5 flex items-center justify-center border border-[#760000]/10">
                     <Users className="h-5 w-5 text-[#760000]" />
@@ -531,9 +477,7 @@ const ProductDetail = () => {
                     <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider font-semibold">Happy Customers</p>
                   </div>
                 </div>
-                
                 <div className="w-px h-10 bg-gray-200 hidden sm:block"></div>
-                
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-full bg-[#760000]/5 flex items-center justify-center border border-[#760000]/10">
                     <MessageSquare className="h-5 w-5 text-[#760000]" />
@@ -546,10 +490,8 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Write a Review Card */}
             <div className="bg-[#fff9f8] p-8 rounded-2xl border-2 border-red-100 shadow-sm relative overflow-hidden">
               <h3 className="text-sm font-bold text-[#760000] uppercase tracking-widest mb-6">Write a Review</h3>
-              
               {isSignedIn ? (
                 <form onSubmit={handleReviewSubmit} className="space-y-6 relative z-10">
                   <div className="flex gap-2">
@@ -560,140 +502,100 @@ const ProductDetail = () => {
                         onClick={() => setRating(star)}
                         className="transition-all duration-200 transform hover:scale-110 active:scale-95"
                       >
-                        <Star
-                          className={`h-7 w-7 ${star <= rating
-                              ? 'fill-[#760000] text-[#760000]'
-                              : 'fill-white text-gray-300'
-                            }`}
-                        />
+                        <Star className={`h-7 w-7 ${star <= rating ? 'fill-[#760000] text-[#760000]' : 'fill-white text-gray-300'}`} />
                       </button>
                     ))}
                   </div>
-                  
                   <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     placeholder="Share your thoughts about this product..."
                     className="w-full text-base p-4 rounded-xl border border-gray-100 focus:border-[#760000]/30 focus:ring-4 focus:ring-[#760000]/5 outline-none min-h-[120px] transition bg-white"
                   />
-                  
                   <button
                     type="submit"
                     disabled={isSubmitting}
                     className="w-full py-4 bg-[#760000] text-white text-sm font-bold uppercase tracking-[0.15em] rounded-xl flex items-center justify-center gap-3 hover:bg-[#8d0000] shadow-[0_10px_20px_rgba(118,0,0,0.15)] transition disabled:opacity-50"
-                   >
+                  >
                     <Pencil className="h-4 w-4" />
                     {isSubmitting ? 'Posting...' : 'Post Review'}
                   </button>
-                  
-                  <div className="flex items-center gap-2 text-gray-400 justify-center">
-                    <ShieldCheck className="h-4 w-4" />
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Secure & Verified Feedback</span>
-                  </div>
                 </form>
               ) : (
                 <div className="text-center py-6">
-                  <p className="text-gray-600 mb-6 font-sans">Please sign in to share your experience with this product.</p>
-                  <Link 
-                    to="/checkout" 
-                    className="inline-block px-8 py-3 bg-[#760000] text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-red-800 transition shadow-lg shadow-red-100"
-                  >
+                  <p className="text-gray-600 mb-6 font-sans">Please sign in to share your experience.</p>
+                  <Link to="/checkout" className="inline-block px-8 py-3 bg-[#760000] text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-red-800 transition shadow-lg">
                     Sign In to Review
                   </Link>
                 </div>
               )}
             </div>
           </div>
-             {/* User Reviews List */}
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16">
             {reviews.length > 0 ? reviews.map((review) => (
               <div key={review._id} className="bg-white p-10 rounded-[28px] border border-gray-100 flex flex-col hover:shadow-[0_22px_45px_rgba(0,0,0,0.06)] transition-all duration-500 relative group min-h-[340px]">
-                
-                {/* 1. Stars at Top */}
                 <div className="flex gap-1 mb-8">
                   {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 ${
-                        i < review.rating 
-                          ? "fill-[#760000] text-[#760000]" 
-                          : "fill-gray-100 text-gray-100"
-                      }`}
-                    />
+                    <Star key={i} className={`h-4 w-4 ${i < review.rating ? "fill-[#760000] text-[#760000]" : "fill-gray-100 text-gray-100"}`} />
                   ))}
                 </div>
-
-                {/* 2. Testimonial Text in Middle */}
                 <div className="flex-grow mb-10">
-                  <p className="text-[#333] text-lg leading-[1.6] font-medium tracking-tight">
-                    "{review.comment}"
-                  </p>
+                  <p className="text-[#333] text-lg leading-[1.6] font-medium tracking-tight">"{review.comment}"</p>
                 </div>
-
-                {/* 3. User Info at Bottom */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     {review.userImage ? (
-                      <img 
-                        src={review.userImage} 
-                        alt={review.userName} 
-                        className="h-14 w-14 rounded-full object-cover border-2 border-red-50"
-                      />
+                      <img src={review.userImage} alt={review.userName} className="h-14 w-14 rounded-full object-cover border-2 border-red-50" />
                     ) : (
                       <div className="h-14 w-14 rounded-full bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center text-[#760000] font-bold text-lg border-2 border-red-50">
                         {review.userName?.charAt(0)}
                       </div>
                     )}
-                    <div className="flex flex-col">
-                      <span className="text-sm font-bold uppercase tracking-[0.1em] text-gray-900">
-                        {review.userName}
-                      </span>
-                    </div>
+                    <span className="text-sm font-bold uppercase tracking-[0.1em] text-gray-900">{review.userName}</span>
                   </div>
-
-                  {/* Admin Delete Action */}
                   {isAdmin && (
-                    <button 
-                      onClick={() => {
-                        if (window.confirm('Are you sure you want to delete this review?')) {
-                          deleteReview(review._id);
-                        }
-                      }}
+                    <button
+                      onClick={() => { if (window.confirm('Delete this review?')) deleteReview(review._id); }}
                       className="opacity-0 group-hover:opacity-100 h-9 w-9 rounded-full flex items-center justify-center text-red-200 hover:bg-red-50 hover:text-red-500 transition-all duration-300"
-                      title="Delete Review"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   )}
-                  
-                  <div className="absolute top-8 right-8">
-                    <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Verified
-                    </div>
-                  </div>
                 </div>
               </div>
             )) : (
-              <div className="col-span-full py-32 text-center bg-gray-50/30 rounded-[32px] border-2 border-dashed border-gray-100">
-                <div className="h-20 w-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6">
-                  <MessageSquare className="h-8 w-8 text-gray-200" />
-                </div>
-                <p className="font-serif text-2xl text-gray-400 italic">No reviews yet for this product.</p>
-                <p className="text-gray-500 mt-2 text-sm italic">Be the first to share your thoughts!</p>
+              <div className="col-span-full py-24 text-center bg-gray-50/30 rounded-[32px] border-2 border-dashed border-gray-100">
+                <MessageSquare className="h-8 w-8 text-gray-200 mx-auto mb-4" />
+                <p className="font-serif text-xl text-gray-400 italic">No reviews yet.</p>
               </div>
             )}
           </div>
-
-          <div className="flex justify-center">
-             <button className="px-8 py-3 rounded-full border border-gray-200 text-gray-600 text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition-all flex items-center gap-3 group">
-                View All Reviews
-                <Icon className="h-4 w-4 group-hover:translate-x-1 transition-transform"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></Icon>
-             </button>
-          </div>
         </section>
-
       </section>
+
+      <ProductFAQ className="mt-20" />
+
+      <PersonalizationModal
+        isOpen={isPersonalizing}
+        onClose={() => setIsPersonalizing(false)}
+        product={product}
+        onConfirm={(details) => {
+          const isActuallyPersonalized = details.text || details.photoPreview;
+          const finalProduct = isActuallyPersonalized ? {
+            ...product,
+            currentPrice: Number(product.currentPrice) + 200,
+            customization: {
+              text: details.text,
+              photo: details.photoPreview,
+              fee: 200
+            }
+          } : product;
+
+          addToCart(finalProduct, quantity);
+          toast.success(isActuallyPersonalized ? 'Added to cart with personalization (+₹200)' : 'Added to cart!');
+        }}
+      />
     </div>
   );
 };

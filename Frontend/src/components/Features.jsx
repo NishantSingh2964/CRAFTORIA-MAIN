@@ -63,7 +63,7 @@ const Features = () => {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 mb-12 sm:mb-14">
           <div className="max-w-2xl">
-            <span className="section-eyebrow">🎁 Curated For Gifting</span>
+            <span className="section-eyebrow">Curated For Gifting</span>
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tracking-tight leading-tight mt-3">
               <span className="text-gray-900">Featured </span>
               <span className="text-[#760000]">Collections</span>

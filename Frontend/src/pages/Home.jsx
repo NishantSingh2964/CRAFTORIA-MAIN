@@ -8,7 +8,7 @@ const MostReviewedProducts = lazy(() => import('../components/MostReviewedProduc
 const PromoBanner = lazy(() => import('../components/PromoBanner'));
 const Occasions = lazy(() => import('../components/Occasions'));
 const Features = lazy(() => import('../components/Features'));
-const ContactUs = lazy(() => import('../components/ContactUs'));
+const ProductFAQ = lazy(() => import('../components/ProductFAQ'));
 const Testimonials = lazy(() => import('../components/Testimonials'));
 
 const SectionFallback = ({ tall = false }) => (
@@ -61,7 +61,7 @@ const Home = () => {
 
       <LazyMount minHeight="280px">
         <Suspense fallback={<SectionFallback />}>
-          <ContactUs />
+          <ProductFAQ />
         </Suspense>
       </LazyMount>
 

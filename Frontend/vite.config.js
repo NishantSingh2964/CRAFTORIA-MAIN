@@ -3,19 +3,6 @@ import react from '@vitejs/plugin-react'
 import { imagetools } from 'vite-imagetools'
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer'
 
-const headHints = `
-  <link rel="preload" href="/lcp-hero.webp" as="image" type="image/webp" fetchpriority="high" />
-`
-
-function htmlLcpPlugin() {
-  return {
-    name: 'html-lcp-preload',
-    transformIndexHtml(html) {
-      return html.replace('<head>', `<head>${headHints}`)
-    },
-  }
-}
-
 /** CSS must load before JS — blocking stylesheet, ordered ahead of the module script. */
 function headOrderPlugin() {
   return {
@@ -41,7 +28,6 @@ export default defineConfig({
   plugins: [
     imagetools(),
     react(),
-    htmlLcpPlugin(),
     headOrderPlugin(),
     ViteImageOptimizer({
       png: { quality: 70 },

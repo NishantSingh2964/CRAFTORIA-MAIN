@@ -27,6 +27,11 @@ const getTransporter = () => {
  * Sends an order confirmation email to the user
  */
 exports.sendOrderConfirmationEmail = async (order) => {
+    if (!order.customerEmail || order.customerEmail === 'Unknown') {
+        console.warn(`⚠️ Skipping confirmation email: Customer email is ${order.customerEmail}`);
+        return;
+    }
+
     const itemsHtml = order.items.map(item => `
         <tr>
             <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>

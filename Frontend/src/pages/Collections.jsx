@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useProducts } from '../contexts/ProductContext';
 import { useOccasions } from '../contexts/OccasionContext';
 import { useWishlist } from '../contexts/WishlistContext';
+import { Pencil, Image as ImageIcon } from 'lucide-react';
 import hero3 from '../assets/home/hero3.png?w=1400&format=webp&quality=82';
 
 const categoriesList = [
@@ -454,6 +455,20 @@ const Collections = () => {
                       loading="lazy"
                       decoding="async"
                     />
+
+                    {/* Personalization Badge Overlay */}
+                    {prod.personalizationType && prod.personalizationType !== 'None' && (
+                      <div className="absolute top-5 left-5 z-20">
+                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-red-100/50 text-[9px] font-bold uppercase tracking-wider text-[#760000] shadow-sm">
+                          {prod.personalizationType === 'Both' ? '✨ Personalizable' : 
+                          prod.personalizationType === 'Text' ? (
+                            <><Pencil className="h-2.5 w-2.5" /> Text Only</>
+                          ) : (
+                            <><ImageIcon className="h-2.5 w-2.5" /> Photo Only</>
+                          )}
+                        </span>
+                      </div>
+                    )}
 
                     {/* Heart/Wishlist Button toggling with state */}
                     <button 

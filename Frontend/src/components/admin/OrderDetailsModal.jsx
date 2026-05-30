@@ -2,8 +2,15 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { X, MapPin, ShoppingBag } from 'lucide-react';
 
+const fmt = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0);
+
 const OrderDetailsModal = ({ order, onClose }) => {
   if (!order) return null;
+
+  const totalCustomizationFee = (order.items || []).reduce(
+    (sum, item) => sum + (item.customization?.fee ? Number(item.customization.fee) * (item.quantity || 1) : 0),
+    0
+  );
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
@@ -48,9 +55,15 @@ const OrderDetailsModal = ({ order, onClose }) => {
                   <span className="text-gray-500 font-medium">Items Count</span>
                   <span className="font-black text-[#171111]">{(order.items || []).length} Items</span>
                 </div>
+                {totalCustomizationFee > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#8d0000] font-bold flex items-center gap-1">✨ Customization Fee</span>
+                    <span className="font-black text-[#8d0000]">+ {fmt(totalCustomizationFee)}</span>
+                  </div>
+                )}
                 <div className="pt-3 border-t border-gray-100 flex justify-between">
                   <span className="font-black text-[#171111]">Total Amount</span>
-                  <span className="font-black text-xl text-[#8d0000]">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(order.totalAmount || 0)}</span>
+                  <span className="font-black text-xl text-[#8d0000]">{fmt(order.totalAmount)}</span>
                 </div>
               </div>
             </section>
@@ -60,8 +73,8 @@ const OrderDetailsModal = ({ order, onClose }) => {
             <h4 className="font-black text-sm uppercase tracking-widest text-[#171111] mb-5 border-l-4 border-[#8d0000] pl-3">Order Items</h4>
             <div className="space-y-4">
               {(order.items || []).map((item, idx) => (
-                <div key={idx} className="flex items-center gap-4 p-4 rounded-2xl border border-gray-50 hover:border-gray-100 hover:bg-gray-50/50 transition">
-                  <img src={item.image || ''} alt={item.name || 'Product'} className="h-20 w-20 rounded-xl object-cover shadow-sm bg-white" />
+                <div key={idx} className="flex items-start gap-4 p-4 rounded-2xl border border-gray-50 hover:border-gray-100 hover:bg-gray-50/50 transition">
+                  <img src={item.image || ''} alt={item.name || 'Product'} className="h-20 w-20 rounded-xl object-cover shadow-sm bg-white shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-[#171111] truncate">{item.name || 'Unknown Product'}</p>
                     <p className="text-sm font-medium text-gray-500 mt-0.5">Qty: <span className="text-[#171111] font-black">{item.quantity || 0}</span></p>
@@ -70,23 +83,37 @@ const OrderDetailsModal = ({ order, onClose }) => {
                       <div className="mt-3 p-3 rounded-lg bg-[#fff8f6] border border-[#f0e3df] space-y-2">
                         {item.customization.text && (
                           <p className="text-xs font-medium text-[#4c3936]">
-                            <span className="font-black text-[#8d0000] uppercase tracking-tighter mr-1">Message:</span> 
+                            <span className="font-black text-[#8d0000] uppercase tracking-tighter mr-1">Message:</span>
                             {item.customization.text}
                           </p>
                         )}
                         {item.customization.photo && (
-                          <div className="flex items-start gap-2">
+                          <div className="flex items-center gap-2">
                             <span className="text-xs font-black text-[#8d0000] uppercase tracking-tighter">Photo:</span>
-                            <div className="relative group/photo">
-                              <img src={item.customization.photo} alt="Custom" className="h-12 w-12 rounded border border-white shadow-sm cursor-zoom-in group-hover/photo:scale-110 transition" onClick={() => window.open(item.customization.photo, '_blank')} />
-                            </div>
+                            <img
+                              src={item.customization.photo}
+                              alt="Customer photo"
+                              className="h-14 w-14 rounded-lg object-cover border-2 border-white shadow cursor-zoom-in hover:scale-110 transition"
+                              onClick={() => window.open(item.customization.photo, '_blank')}
+                            />
                           </div>
+                        )}
+                        {item.customization.fee && (
+                          <p className="text-xs font-black text-[#8d0000]">✨ Customization Fee: +{fmt(item.customization.fee)}</p>
                         )}
                       </div>
                     )}
                   </div>
-                  <div className="text-right">
-                    <p className="font-black text-[#171111]">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(item.price || 0)}</p>
+                  <div className="text-right shrink-0">
+                    {item.customization?.fee ? (
+                      <>
+                        <p className="text-[10px] text-gray-400 font-medium">Base: {fmt(Number(item.price) - Number(item.customization.fee))}</p>
+                        <p className="text-[10px] text-[#8d0000] font-bold">+ Fee: {fmt(item.customization.fee)}</p>
+                        <p className="font-black text-[#171111] mt-1">{fmt(item.price)}</p>
+                      </>
+                    ) : (
+                      <p className="font-black text-[#171111]">{fmt(item.price)}</p>
+                    )}
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Per Unit</p>
                   </div>
                 </div>

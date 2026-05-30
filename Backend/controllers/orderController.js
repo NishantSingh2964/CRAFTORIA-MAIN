@@ -35,22 +35,25 @@ exports.createCheckoutSession = async (req, res, next) => {
         const { items, deliveryInfo } = req.body;
         const userId = req.auth.userId;
 
-        const line_items = await Promise.all(items.map(async (item) => {
-            const product = await Product.findById(item.productId);
-            if (!product) throw new Error(`Product ${item.productId} not found`);
-            
+        const line_items = items.map((item) => {
+            // Use item.price from frontend — already includes ₹200 customization fee if applicable
+            const unitPrice = Number(item.price);
+            const productName = item.customization
+                ? `${item.name} (+ Customization)`
+                : item.name;
+
             return {
                 price_data: {
                     currency: 'inr',
                     product_data: {
-                        name: product.name,
-                        images: [product.image],
+                        name: productName,
+                        images: item.image ? [item.image] : [],
                     },
-                    unit_amount: Math.round(product.currentPrice * 100),
+                    unit_amount: Math.round(unitPrice * 100),
                 },
                 quantity: item.quantity,
             };
-        }));
+        });
 
         const orderNumber = `GT-${Math.floor(100000 + Math.random() * 900000)}`;
         const totalAmount = line_items.reduce((sum, item) => sum + (item.price_data.unit_amount * item.quantity), 0) / 100;
