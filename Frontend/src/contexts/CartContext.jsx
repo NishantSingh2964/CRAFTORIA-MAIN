@@ -5,6 +5,8 @@ export { CartContext };
 
 export const useCart = () => useContext(CartContext);
 
+const getCartItemId = (item) => item?.id || item?._id || item?.sku || item?.name;
+
 // Load initial cart from localStorage synchronously (lazy initializer)
 const loadCart = () => {
   try {
@@ -32,20 +34,21 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = useCallback((product, quantity = 1) => {
     setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
+      const productId = getCartItemId(product);
+      const existing = prev.find(item => getCartItemId(item) === productId);
       const updated = existing
         ? prev.map(item =>
-            item.id === product.id
+            getCartItemId(item) === productId
               ? { ...item, quantity: item.quantity + quantity }
               : item
           )
-        : [...prev, { ...product, quantity }];
+        : [...prev, { ...product, id: productId, quantity }];
       return updated;
     });
   }, []);
 
   const removeFromCart = useCallback(productId => {
-    setCartItems(prev => prev.filter(item => item.id !== productId));
+    setCartItems(prev => prev.filter(item => getCartItemId(item) !== productId));
   }, []);
 
   const clearCart = useCallback(() => {
@@ -55,7 +58,7 @@ export const CartProvider = ({ children }) => {
   const updateQuantity = useCallback((productId, newQuantity) => {
     setCartItems(prev =>
       prev.map(item =>
-        item.id === productId ? { ...item, quantity: Math.max(1, newQuantity) } : item
+        getCartItemId(item) === productId ? { ...item, quantity: Math.max(1, newQuantity) } : item
       )
     );
   }, []);

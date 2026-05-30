@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useUser, useClerk } from '@clerk/clerk-react';
+import { Link } from 'react-router-dom';
+import { useUser } from '@clerk/clerk-react';
 import { useCart } from '../contexts/CartContext';
 import { useProducts } from '../contexts/ProductContext';
 import hero2 from '../assets/home/hero2.png?w=1400&format=webp&quality=82';
@@ -59,8 +59,6 @@ const trustItems = [
 
 const Cart = () => {
   const { isLoaded, isSignedIn } = useUser();
-  const { openSignIn } = useClerk();
-  const navigate = useNavigate();
   const { cartItems, removeFromCart, updateQuantity, clearCart, addToCart } = useCart();
   const { products, fetchProducts } = useProducts();
 
@@ -181,10 +179,11 @@ const Cart = () => {
 
               <div className="divide-y divide-gray-100">
                 {cartItems.map((item) => {
+                  const itemId = item.id || item._id;
                   const lineTotal = parsePrice(item.currentPrice) * item.quantity;
                   return (
                     <div
-                      key={item.id}
+                      key={itemId}
                       className="grid grid-cols-1 md:grid-cols-[1fr_100px_120px_90px_40px] gap-4 md:gap-4 items-center px-5 sm:px-6 py-8"
                     >
                       <div className="flex gap-5 min-w-0">
@@ -215,7 +214,7 @@ const Cart = () => {
                           <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
                             <button
                               type="button"
-                              onClick={() => removeFromCart(item.id)}
+                              onClick={() => removeFromCart(itemId)}
                               className="hover:text-[#760000] transition"
                             >
                               Remove
@@ -245,7 +244,7 @@ const Cart = () => {
                         <div className="inline-grid grid-cols-3 h-10 w-[110px] rounded border border-gray-200 overflow-hidden bg-white">
                           <button
                             type="button"
-                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                            onClick={() => updateQuantity(itemId, Math.max(1, item.quantity - 1))}
                             className="text-[#760000] font-bold hover:bg-red-50 text-lg"
                             aria-label="Decrease quantity"
                           >
@@ -256,7 +255,7 @@ const Cart = () => {
                           </span>
                           <button
                             type="button"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            onClick={() => updateQuantity(itemId, item.quantity + 1)}
                             className="text-[#760000] font-bold hover:bg-red-50 text-lg"
                             aria-label="Increase quantity"
                           >
@@ -273,7 +272,7 @@ const Cart = () => {
                       <div className="flex md:justify-center -mt-2 md:mt-0">
                         <button
                           type="button"
-                          onClick={() => removeFromCart(item.id)}
+                          onClick={() => removeFromCart(itemId)}
                           className="text-gray-300 hover:text-[#760000] transition ml-auto md:ml-0"
                           aria-label={`Remove ${item.name}`}
                         >

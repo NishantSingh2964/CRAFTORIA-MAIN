@@ -29,6 +29,48 @@ const WhatsAppIcon = ({ className = 'h-4 w-4' }) => (
   </svg>
 );
 
+const paymentMethods = [
+  {
+    name: 'VISA',
+    logo: (
+      <span className="font-sans text-[18px] font-black italic tracking-tight text-[#1a4aa1] leading-none">
+        VISA
+      </span>
+    ),
+  },
+  {
+    name: 'Mastercard',
+    logo: (
+      <span className="relative flex h-7 w-12 items-center justify-center">
+        <span className="absolute left-2 h-6 w-6 rounded-full bg-[#eb001b]" />
+        <span className="absolute right-2 h-6 w-6 rounded-full bg-[#f79e1b] mix-blend-multiply" />
+      </span>
+    ),
+  },
+  {
+    name: 'RuPay',
+    logo: (
+      <span className="flex items-center gap-1 font-sans text-[16px] font-black tracking-tight leading-none">
+        <span className="text-[#123c7c]">Ru</span>
+        <span className="text-[#0c8f45]">Pay</span>
+        <span className="ml-0.5 h-0 w-0 border-y-[5px] border-l-[8px] border-y-transparent border-l-[#f58220]" />
+      </span>
+    ),
+  },
+  {
+    name: 'UPI',
+    logo: (
+      <span className="flex items-center gap-1 font-sans text-[18px] font-black tracking-tight text-gray-800 leading-none">
+        UPI
+        <span className="flex gap-0.5">
+          <span className="h-4 w-1.5 skew-x-[-18deg] bg-[#f58220]" />
+          <span className="h-4 w-1.5 skew-x-[-18deg] bg-[#2aa84a]" />
+        </span>
+      </span>
+    ),
+  },
+];
+
 const OrderSummary = ({ cartItems, primaryLabel, primaryTo, onPrimaryClick, stickyTop = 'xl:top-24' }) => {
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -172,19 +214,17 @@ const OrderSummary = ({ cartItems, primaryLabel, primaryTo, onPrimaryClick, stic
 
       <div className="mt-6 pt-5 border-t border-gray-100">
         <p className="micro-label text-gray-500 mb-3">We Accept</p>
-        <div className="flex flex-wrap items-center gap-3 opacity-70">
-          <span className="text-[10px] font-bold tracking-wider text-blue-800 border border-gray-200 px-2 py-1 rounded bg-white">
-            VISA
-          </span>
-          <span className="text-[10px] font-bold tracking-wider text-red-700 border border-gray-200 px-2 py-1 rounded bg-white">
-            MC
-          </span>
-          <span className="text-[10px] font-bold tracking-wider text-blue-600 border border-gray-200 px-2 py-1 rounded bg-white">
-            RuPay
-          </span>
-          <span className="text-[10px] font-bold tracking-wider text-gray-800 border border-gray-200 px-2 py-1 rounded bg-white">
-            UPI
-          </span>
+        <div className="grid grid-cols-4 gap-2" aria-label="Accepted payment methods">
+          {paymentMethods.map((method) => (
+            <div
+              key={method.name}
+              className="flex h-12 items-center justify-center rounded-lg border border-gray-200 bg-[#fcfbf9] px-2 shadow-sm"
+              title={method.name}
+              aria-label={method.name}
+            >
+              {method.logo}
+            </div>
+          ))}
         </div>
       </div>
     </aside>
