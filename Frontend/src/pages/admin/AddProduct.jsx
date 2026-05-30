@@ -38,8 +38,8 @@ const AddProduct = () => {
   const { addProduct } = useProducts();
   const { occasions } = useOccasions();
   const [loading, setLoading] = useState(false);
-  const [preview, setPreview] = useState(null);
-  const [file, setFile] = useState(null);
+  const [previews, setPreviews] = useState([null, null, null, null]);
+  const [files, setFiles] = useState([null, null, null, null]);
   const [selectedOccasions, setSelectedOccasions] = useState([]);
   const [occasionDropdown, setOccasionDropdown] = useState(false);
 
@@ -62,18 +62,28 @@ const AddProduct = () => {
 
   const [isOptimizing, setIsOptimizing] = useState(false);
 
-  const handleImageChange = async (e) => {
+  const handleImageChange = async (e, index) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setIsOptimizing(true);
       try {
         const compressed = await compressImage(selectedFile);
-        setFile(compressed);
+        
+        setFiles(prev => {
+          const newFiles = [...prev];
+          newFiles[index] = compressed;
+          return newFiles;
+        });
+
         const reader = new FileReader();
         reader.onloadend = () => {
-          setPreview(reader.result);
+          setPreviews(prev => {
+            const newPreviews = [...prev];
+            newPreviews[index] = reader.result;
+            return newPreviews;
+          });
           setIsOptimizing(false);
-          toast.success('Image ready');
+          toast.success(`Image ${index + 1} ready`);
         };
         reader.readAsDataURL(compressed);
       } catch (error) {
@@ -84,6 +94,19 @@ const AddProduct = () => {
     }
   };
 
+  const removeImage = (index) => {
+    setFiles(prev => {
+      const newFiles = [...prev];
+      newFiles[index] = null;
+      return newFiles;
+    });
+    setPreviews(prev => {
+      const newPreviews = [...prev];
+      newPreviews[index] = null;
+      return newPreviews;
+    });
+  };
+
   const toggleOccasion = (id) => {
     setSelectedOccasions(prev =>
       prev.includes(id) ? prev.filter(o => o !== id) : [...prev, id]
@@ -92,15 +115,20 @@ const AddProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) {
-      toast.error('Please upload a product image');
+    if (!files[0]) {
+      toast.error('Please upload a Main Image (Slot 1)');
       return;
     }
 
     setLoading(true);
     const submissionData = new FormData();
     Object.keys(formData).forEach(key => submissionData.append(key, formData[key]));
-    submissionData.append('image', file);
+    
+    // Filter out null files and append to 'images'
+    files.forEach(file => {
+      if (file) submissionData.append('images', file);
+    });
+
     // Send occasions as a JSON string (matches backend parser)
     submissionData.append('occasions', JSON.stringify(selectedOccasions));
 
@@ -312,31 +340,57 @@ const AddProduct = () => {
         {/* RIGHT: Image + Visibility */}
         <aside className="space-y-5">
           <section className="rounded-2xl border border-[#eadbd6] bg-white p-6 shadow-[0_14px_34px_rgba(80,24,18,0.05)]">
-            <h2 className="mb-5 font-serif text-2xl font-black text-[#171111]">Imagery</h2>
-            <label className="relative flex min-h-[290px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-[#d8b7ae] bg-[#fffaf7] text-center transition hover:border-[#9a1515]">
-              <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 z-20 cursor-pointer opacity-0" />
-              {preview ? (
-                <>
-                  <img src={preview} alt="Product preview" className="absolute inset-0 h-full w-full rounded-2xl object-cover" />
-                  <button
-                    type="button"
-                    onClick={e => { e.preventDefault(); setPreview(null); setFile(null); }}
-                    className="absolute right-3 top-3 z-30 grid h-8 w-8 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black"
-                    aria-label="Remove image"
+            <h2 className="mb-1 font-serif text-2xl font-black text-[#171111]">Imagery</h2>
+            <p className="mb-5 text-[11px] font-medium text-[#8b7772]">Add up to 4 images. Slot 1 is the main card image.</p>
+            
+            <div className="grid grid-cols-2 gap-4">
+              {[0, 1, 2, 3].map((idx) => (
+                <div key={idx} className={idx === 0 ? 'col-span-2' : ''}>
+                  <label 
+                    className={`relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all ${
+                      previews[idx] ? 'border-solid border-[#8d0000]' : 'border-[#d8b7ae] bg-[#fffaf7] hover:border-[#9a1515]'
+                    } ${idx === 0 ? 'h-[240px]' : 'h-[120px]'}`}
                   >
-                    <X className="h-4 w-4" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <span className="grid h-16 w-16 place-items-center rounded-full border border-[#e4d5cf] bg-white shadow-[0_12px_28px_rgba(80,24,18,0.08)]">
-                    <Upload className="h-7 w-7 text-[#9aa0ad]" />
-                  </span>
-                  <span className="mt-6 text-xs font-black uppercase tracking-[0.24em] text-[#9aa0ad]">Choose File</span>
-                  <span className="mt-2 text-[10px] font-black uppercase tracking-wide text-[#9aa0ad]">PNG, JPG or WEBP</span>
-                </>
-              )}
-            </label>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={(e) => handleImageChange(e, idx)} 
+                      className="absolute inset-0 z-20 cursor-pointer opacity-0" 
+                    />
+                    
+                    {previews[idx] ? (
+                      <>
+                        <img src={previews[idx]} alt={`Preview ${idx + 1}`} className="absolute inset-0 h-full w-full rounded-[10px] object-cover" />
+                        <div className="absolute inset-0 z-10 bg-black/10 transition hover:bg-black/20" />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); removeImage(idx); }}
+                          className="absolute right-2 top-2 z-30 grid h-7 w-7 place-items-center rounded-full bg-white/90 text-[#8d0000] shadow-lg transition hover:bg-white hover:scale-110"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                        {idx === 0 && (
+                          <span className="absolute bottom-3 left-3 z-30 rounded-full bg-[#8d0000] px-3 py-1 text-[10px] font-black uppercase text-white shadow-lg">Main Image</span>
+                        )}
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <Upload className={`${idx === 0 ? 'h-8 w-8' : 'h-5 w-5'} text-[#d8b7ae] mb-2`} />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[#9aa0ad]">
+                          {idx === 0 ? 'Main Photo' : `Gallery ${idx}`}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {isOptimizing && idx === 0 && (
+                      <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+                        <Loader2 className="h-6 w-6 animate-spin text-[#8d0000]" />
+                      </div>
+                    )}
+                  </label>
+                </div>
+              ))}
+            </div>
           </section>
 
           <section className="rounded-2xl border border-[#eadbd6] bg-white p-6 shadow-[0_14px_34px_rgba(80,24,18,0.05)]">

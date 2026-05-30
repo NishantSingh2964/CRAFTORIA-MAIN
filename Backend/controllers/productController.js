@@ -105,13 +105,25 @@ exports.getProduct = async (req, res, next) => {
 
 exports.createProduct = async (req, res, next) => {
     try {
+        let images = [];
+        if (req.files && req.files.length > 0) {
+            images = req.files.map(file => file.path);
+        } else if (req.body.images) {
+            try {
+                images = typeof req.body.images === 'string' ? JSON.parse(req.body.images) : req.body.images;
+            } catch (e) {
+                images = [req.body.images];
+            }
+        }
+
         const productData = {
             ...req.body,
-            image: req.file ? req.file.path : req.body.image
+            images,
+            image: images.length > 0 ? images[0] : (req.body.image || (images[0] || ''))
         };
 
-        if (!productData.image) {
-            return res.status(400).json({ success: false, message: 'Please upload an image' });
+        if (!productData.image && images.length === 0) {
+            return res.status(400).json({ success: false, message: 'Please upload at least one image' });
         }
 
         // Robust parsing for occasions (handles JSON, single-quotes, or literal strings)
@@ -146,8 +158,47 @@ exports.updateProduct = async (req, res, next) => {
         }
 
         const updateData = { ...req.body };
-        if (req.file) {
-            updateData.image = req.file.path;
+        
+        // Reconstruct images array from images_meta (slot layout) + slot-indexed file uploads
+        if (req.body.images_meta) {
+            let meta = [];
+            try {
+                meta = JSON.parse(req.body.images_meta);
+            } catch (e) {
+                meta = [];
+            }
+
+            // Build a map of slot index -> uploaded file path from slot-indexed fields (image_0, image_1 …)
+            const slotFileMap = {};
+            if (req.files) {
+                req.files.forEach(file => {
+                    // multer stores fieldname as 'image_0', 'image_1', etc.
+                    const match = file.fieldname.match(/^image_(\d+)$/);
+                    if (match) {
+                        slotFileMap[parseInt(match[1])] = file.path;
+                    }
+                });
+            }
+
+            // Rebuild the final images array by walking through images_meta
+            const finalImages = [];
+            meta.forEach(entry => {
+                const slotMatch = entry.match(/^NEW_FILE_(\d+)$/);
+                if (slotMatch) {
+                    const slotIdx = parseInt(slotMatch[1]);
+                    if (slotFileMap[slotIdx]) {
+                        finalImages.push(slotFileMap[slotIdx]);
+                    }
+                } else if (entry.startsWith('http')) {
+                    // Keep existing Cloudinary URL as-is
+                    finalImages.push(entry);
+                }
+            });
+
+            if (finalImages.length > 0) {
+                updateData.images = finalImages;
+                updateData.image  = finalImages[0]; // Slot 0 is always the main image
+            }
         }
 
         // Robust parsing for occasions (handles JSON, single-quotes, or literal strings)

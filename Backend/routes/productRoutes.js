@@ -15,8 +15,8 @@ router.get('/', getProducts);
 router.get('/:id', getProduct);
 
 // Admin routes
-router.post('/admin', protect, admin, upload.single('image'), createProduct);
-router.patch('/admin/:id', protect, admin, upload.single('image'), updateProduct);
+router.post('/admin', protect, admin, upload.array('images', 4), createProduct);
+router.patch('/admin/:id', protect, admin, upload.any(), updateProduct);
 router.delete('/admin/:id', protect, admin, deleteProduct);
 
 module.exports = router;

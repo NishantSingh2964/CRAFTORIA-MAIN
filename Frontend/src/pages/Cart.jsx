@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { useCart } from '../contexts/CartContext';
-import { products } from '../assets';
+import { useProducts } from '../contexts/ProductContext';
 import hero2 from '../assets/home/hero2.png?w=1400&format=webp&quality=82';
 import { formatPrice } from '../utils/formatPrice';
 import OrderSummary from '../components/OrderSummary';
@@ -62,11 +62,16 @@ const Cart = () => {
   const { openSignIn } = useClerk();
   const navigate = useNavigate();
   const { cartItems, removeFromCart, updateQuantity, clearCart, addToCart } = useCart();
+  const { products, fetchProducts } = useProducts();
+
+  useEffect(() => {
+    if (products.length === 0) fetchProducts();
+  }, []);
 
   const recommendedProducts = useMemo(() => {
-    const cartIds = new Set(cartItems.map((item) => item.id));
-    return products.filter((p) => !cartIds.has(p.id)).slice(0, 4);
-  }, [cartItems]);
+    const cartIds = new Set(cartItems.map((item) => item._id || item.id));
+    return products.filter((p) => !cartIds.has(p._id || p.id)).slice(0, 4);
+  }, [cartItems, products]);
 
   const handleClearCart = () => {
     clearCart();
@@ -335,13 +340,15 @@ const Cart = () => {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
           {recommendedProducts.map((item) => (
-            <div key={item.id} className="group">
-              <Link to={`/product/${item.id}`} className="block">
+            <div key={item._id || item.id} className="group">
+              <Link to={`/product/${item._id || item.id}`} className="block">
                 <div className="relative aspect-[3/4] sm:aspect-[4/5] rounded-md overflow-hidden bg-red-50 mb-3 sm:mb-5 border border-gray-100">
                   <img
                     src={item.image}
                     alt={item.name}
                     className="h-full w-full object-cover group-hover:scale-105 transition duration-500"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <button
                     type="button"

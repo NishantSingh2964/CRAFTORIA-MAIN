@@ -60,6 +60,8 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeImage, setActiveImage] = useState(null);
+  const [gallery, setGallery] = useState([]);
 
   // Personalization State
   const [isPersonalizing, setIsPersonalizing] = useState(false);
@@ -77,12 +79,33 @@ const ProductDetail = () => {
       try {
         const res = await fetchProductById(id);
         if (res.success) {
-          setProduct(res.data);
+          const p = res.data;
+          setProduct(p);
+          // Build a deduplicated gallery: always start with the main image,
+          // then append any additional images not already included
+          const mainImg = p.image || (p.images && p.images[0]) || null;
+          const allImgs = p.images && p.images.length > 0 ? p.images : (mainImg ? [mainImg] : []);
+          const seen = new Set();
+          const deduped = [];
+          // Ensure mainImg is first
+          if (mainImg) { seen.add(mainImg); deduped.push(mainImg); }
+          allImgs.forEach(img => { if (img && !seen.has(img)) { seen.add(img); deduped.push(img); } });
+          setGallery(deduped);
+          setActiveImage(mainImg);
           fetchReviewsByProduct(id);
         } else {
           const persRes = await fetchPersonalizedProductById(id);
           if (persRes.success) {
-            setProduct(persRes.data);
+            const p = persRes.data;
+            setProduct(p);
+            const mainImg = p.image || (p.images && p.images[0]) || null;
+            const allImgs = p.images && p.images.length > 0 ? p.images : (mainImg ? [mainImg] : []);
+            const seen = new Set();
+            const deduped = [];
+            if (mainImg) { seen.add(mainImg); deduped.push(mainImg); }
+            allImgs.forEach(img => { if (img && !seen.has(img)) { seen.add(img); deduped.push(img); } });
+            setGallery(deduped);
+            setActiveImage(mainImg);
             fetchReviewsByProduct(id);
           } else {
             setError(res.error || persRes.error);
@@ -224,36 +247,55 @@ const ProductDetail = () => {
   return (
     <div className="bg-white pt-28 sm:pt-32 lg:pt-36 pb-2 text-gray-950">
       <section className="site-container">
-        <div className="grid grid-cols-1 lg:grid-cols-[0.52fr_0.48fr] gap-8 lg:gap-14 items-start lg:items-stretch">
-          <div className="relative rounded-md overflow-hidden bg-[#fbf5f2] min-h-[420px] sm:min-h-[520px] lg:min-h-0 lg:h-full max-w-[760px] w-full">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="absolute inset-0 h-full w-full object-cover"
-              fetchPriority="high"
-              decoding="async"
-            />
+        <div className="grid grid-cols-1 lg:grid-cols-[0.52fr_0.48fr] gap-8 lg:gap-14 lg:items-stretch">
+          <div className="flex flex-col gap-4 max-w-[760px] w-full lg:h-full">
+            <div className="relative rounded-md overflow-hidden bg-[#fbf5f2] min-h-[420px] sm:min-h-[520px] w-full flex-1">
+              <img
+                src={activeImage}
+                alt={product.name}
+                className="absolute inset-0 h-full w-full object-cover transition-all duration-500"
+                fetchPriority="high"
+                decoding="async"
+              />
 
-            {/* Main Personalization Badge Overlay */}
-            {product.personalizationType && product.personalizationType !== 'None' && (
-              <div className="absolute top-6 left-6 z-20">
-                <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/95 backdrop-blur-md border border-red-100/50 text-[10px] font-bold uppercase tracking-[0.1em] text-[#760000] shadow-xl">
-                  {product.personalizationType === 'Both' ? '✨ Fully Customizable Gift' :
-                    product.personalizationType === 'Text' ? (
-                      <><Pencil className="h-3 w-3" /> Text Personalize Ready</>
-                    ) : (
-                      <><ImageIcon className="h-3 w-3" /> Photo Personalize Ready</>
-                    )}
-                </span>
+              {/* Main Personalization Badge Overlay */}
+              {product.personalizationType && product.personalizationType !== 'None' && (
+                <div className="absolute top-6 left-6 z-20">
+                  <span className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/95 backdrop-blur-md border border-red-100/50 text-[10px] font-bold uppercase tracking-[0.1em] text-[#760000] shadow-xl">
+                    {product.personalizationType === 'Both' ? '✨ Fully Customizable Gift' :
+                      product.personalizationType === 'Text' ? (
+                        <><Pencil className="h-3 w-3" /> Text Personalize Ready</>
+                      ) : (
+                        <><ImageIcon className="h-3 w-3" /> Photo Personalize Ready</>
+                      )}
+                  </span>
+                </div>
+              )}
+
+              <button type="button" className="absolute right-5 top-5 h-12 w-12 rounded-full bg-white text-[#760000] shadow-lg flex items-center justify-center hover:scale-105 transition" aria-label="Add to wishlist">
+                <Icon className="h-6 w-6"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></Icon>
+              </button>
+            </div>
+
+            {/* Thumbnails — show all images from the deduplicated gallery */}
+            {gallery.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {gallery.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImage(img)}
+                    className={`relative shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-all ${
+                      activeImage === img ? 'border-[#760000] p-0.5' : 'border-transparent opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={img} alt={`${product.name} ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
               </div>
             )}
-
-            <button type="button" className="absolute right-5 top-5 h-14 w-14 rounded-full bg-white text-[#760000] shadow-lg flex items-center justify-center hover:scale-105 transition" aria-label="Add to wishlist">
-              <Icon className="h-7 w-7"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></Icon>
-            </button>
           </div>
 
-          <aside className="lg:pt-2 h-full">
+          <aside className="lg:pt-2 lg:h-full lg:flex lg:flex-col">
             <h1 className="font-serif text-3xl sm:text-5xl lg:text-[3.25rem] font-bold leading-tight tracking-tight text-gray-950 mb-4">
               {product.name}
             </h1>
