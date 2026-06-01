@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { WEBSITE_INFO } from '../data/websiteInfo';
+import { X, MessageSquare, Send } from 'lucide-react';
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,40 +49,47 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[999] font-sans">
-      {/* Chat toggle button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="h-14 w-14 rounded-full bg-[#760000] text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 group"
-        aria-label="Toggle Chat"
-      >
-        {isOpen ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
+    <div className="fixed bottom-6 right-6 z-[9999] font-sans">
+      {/* Floating Toggle Button - ONLY shown when chat is closed */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="h-14 w-14 rounded-full bg-[#760000] text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300"
+          aria-label="Open Chat"
+        >
           <div className="relative">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
             </svg>
-
           </div>
-        )}
-      </button>
+        </button>
+      )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="absolute bottom-20 right-0 w-[350px] sm:w-[400px] h-[550px] bg-white rounded-2xl shadow- [0_20px_50px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden border border-gray-100 animate-in fade-in slide-in-from-bottom-10 duration-300">
-          {/* Header */}
+        <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 w-auto sm:w-[400px] h-[calc(100vh-80px)] sm:h-[600px] bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden border border-gray-100 animate-in fade-in slide-in-from-bottom-10 duration-300">
+          
+          {/* Header with Close Button */}
           <div className="bg-[#760000] p-4 text-white">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg">
-                C
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg">
+                  C
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm">Craftoria Assistant</h3>
+                  <p className="text-[11px] text-white/70">Online | Answers in seconds</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-sm">Craftoria Assistant</h3>
-                <p className="text-[11px] text-white/70">Online | Answers in seconds</p>
-              </div>
+              
+              {/* This is the NEW close button in the header */}
+              <button 
+                onClick={() => setIsOpen(false)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors bg-white/10"
+                aria-label="Close Chat"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
           </div>
 
@@ -96,7 +104,7 @@ const Chatbot = () => {
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm ${msg.role === 'user'
+                  className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm ${msg.role === 'user'
                     ? 'bg-[#760000] text-white rounded-br-none'
                     : 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-none'
                     }`}
@@ -125,7 +133,7 @@ const Chatbot = () => {
                 <button
                   key={q}
                   onClick={() => { setInput(q); }}
-                  className="text-[11px] bg-white border border-gray-200 px-3 py-1.5 rounded-full hover:border-[#760000] hover:text-[#760000] transition-colors"
+                  className="text-[11px] bg-white border border-gray-200 px-3 py-1.5 rounded-full hover:border-[#760000] hover:text-[#760000] transition-colors shadow-sm"
                 >
                   {q}
                 </button>
@@ -147,11 +155,9 @@ const Chatbot = () => {
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
-                className="absolute right-2 p-2 rounded-full bg-[#760000] text-white disabled:bg-gray-300 transition-colors"
+                className="absolute right-2 p-2 rounded-full bg-[#760000] text-white disabled:bg-gray-300 transition-colors shadow-lg"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
+                <Send className="h-4 w-4" />
               </button>
             </div>
           </div>
