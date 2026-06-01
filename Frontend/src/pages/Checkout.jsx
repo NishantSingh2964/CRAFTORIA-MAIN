@@ -306,9 +306,18 @@ console.log('🔄 Starting payment processing', form);
       }
     };
 
-    const res = await createStripeSession(orderData.items, orderData.deliveryInfo);
+    const customerEmail = user?.primaryEmailAddress?.emailAddress;
+    const res = await createStripeSession(orderData.items, orderData.deliveryInfo, customerEmail);
 
     if (res.success && res.url) {
+      // Mark as placed in session storage to persist across back button navigation
+      sessionStorage.setItem('lastOrderPlaced', 'true');
+      setOrderPlaced(true);
+      
+      // Replace history state so back button from Stripe goes to My Orders
+      window.history.replaceState(null, '', `/my-orders?payment=cancelled&orderId=${res.orderId}`);
+      
+      clearCart();
       window.location.href = res.url;
     } else {
       toast.error(res.error || 'Failed to initiate payment');
@@ -325,8 +334,15 @@ console.log('🔄 Starting payment processing', form);
 
   if (!isSignedIn) return null;
 
-  if (cartItems.length === 0 && !orderPlaced) {
+  if (cartItems.length === 0 && !orderPlaced && !sessionStorage.getItem('lastOrderPlaced')) {
     navigate('/cart');
+    return null;
+  }
+
+  // If they somehow land back here after placing order (e.g. history failure)
+  if (sessionStorage.getItem('lastOrderPlaced')) {
+    sessionStorage.removeItem('lastOrderPlaced');
+    navigate('/my-orders');
     return null;
   }
 

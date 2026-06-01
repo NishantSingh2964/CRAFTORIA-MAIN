@@ -3,7 +3,17 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 const CartContext = createContext();
 export { CartContext };
 
-export const useCart = () => useContext(CartContext);
+const EMPTY_CART = {
+  cartItems: [],
+  cart: [],
+  addToCart: () => {},
+  removeFromCart: () => {},
+  clearCart: () => {},
+  updateQuantity: () => {},
+};
+
+export const useCart = () => useContext(CartContext) ?? EMPTY_CART;
+
 
 const getCartItemId = (item) => item?.id || item?._id || item?.sku || item?.name;
 

@@ -60,7 +60,7 @@ const orderSchema = new mongoose.Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['Paid', 'Unpaid', 'Refunded'],
+        enum: ['Paid', 'Unpaid', 'Payment Pending', 'Refunded'],
         default: 'Unpaid'
     },
     stripeSessionId: {
@@ -71,6 +71,10 @@ const orderSchema = new mongoose.Schema({
     },
     receiptUrl: {
         type: String
+    },
+    expiresAt: {
+        type: Date,
+        index: { expires: 0 } // TTL index: deletes doc when expiresAt <= current time
     }
 }, {
     timestamps: true

@@ -24,14 +24,12 @@ exports.handleStripeWebhook = async (req, res) => {
         const metadata = session.metadata;
 
         try {
-            // Find existing order
             const order = await Order.findOne({ orderNumber: metadata.orderNumber });
             if (!order) {
                 console.error(`Order ${metadata.orderNumber} not found in database.`);
                 return res.json({ received: true });
             }
 
-            // Get invoice and receipt URLs
             let invoiceUrl = null;
             let receiptUrl = null;
 
@@ -47,15 +45,14 @@ exports.handleStripeWebhook = async (req, res) => {
                 receiptUrl = paymentIntent.latest_charge?.receipt_url;
             }
 
-            // Update order status
             order.paymentStatus = 'Paid';
             order.invoiceUrl = invoiceUrl;
             order.receiptUrl = receiptUrl;
+            order.expiresAt = undefined; // STOP THE AUTO-DELETE TIMER
             await order.save();
 
             console.log(`✅ Order ${metadata.orderNumber} status updated to PAID.`);
 
-            // 2. Decrement Inventory
             for (const item of order.items) {
                 await Product.findByIdAndUpdate(item.productId, {
                     $inc: { stock: -item.quantity }
@@ -64,18 +61,15 @@ exports.handleStripeWebhook = async (req, res) => {
             
             console.log(`📦 Inventory adjusted for order ${metadata.orderNumber}.`);
 
-            // Trigger Notification
             await Notification.create({
                 message: `New Order Received: ${metadata.orderNumber}`,
                 type: 'Order',
                 link: '/admin/orders'
             });
 
-            // Send Emails
             console.log(`📧 Initiating emails for ${order.customerEmail}...`);
             const { sendOrderConfirmationEmail, sendAdminOrderNotification } = require('../utils/emailService');
             
-            // We run these in background (no await) or with try/catch to not block the webhook
             sendOrderConfirmationEmail(order)
                 .then(() => console.log('✅ Customer confirmation email sent successfully'))
                 .catch(err => console.error('❌ Error sending customer email:', err.message));
@@ -89,5 +83,31 @@ exports.handleStripeWebhook = async (req, res) => {
         }
     }
 
+    // Handle session expiry (user closed Stripe tab without paying)
+    if (event.type === 'checkout.session.expired') {
+        const session = event.data.object;
+        const metadata = session.metadata;
+        if (!metadata?.orderNumber) return res.json({ received: true });
+
+        try {
+            const order = await Order.findOne({ orderNumber: metadata.orderNumber });
+            if (!order || order.paymentStatus === 'Paid') return res.json({ received: true });
+
+            order.paymentStatus = 'Payment Pending';
+            await order.save();
+
+            const retryUrl = `${process.env.FRONTEND_URL}/my-orders?retry=${order._id}`;
+            const { sendPaymentFailedEmail } = require('../utils/emailService');
+            sendPaymentFailedEmail(order, retryUrl)
+                .then(() => console.log(`📧 Expiry email sent for ${order.orderNumber}`))
+                .catch(err => console.error('❌ Expiry email failed:', err.message));
+
+            console.log(`⏰ Session expired for order ${order.orderNumber} — marked Payment Pending.`);
+        } catch (error) {
+            console.error('Error handling expired session:', error);
+        }
+    }
+
     res.json({ received: true });
 };
+

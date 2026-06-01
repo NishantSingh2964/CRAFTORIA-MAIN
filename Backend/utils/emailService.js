@@ -114,3 +114,51 @@ exports.sendAdminOrderNotification = async (order) => {
 
     return getTransporter().sendMail(mailOptions);
 };
+
+/**
+ * Sends a payment-failed / abandoned-checkout email to the user
+ * @param {Object} order - the Order document
+ * @param {string} retryUrl - full URL that takes the user back to Stripe checkout
+ */
+exports.sendPaymentFailedEmail = async (order, retryUrl) => {
+    if (!order.customerEmail || order.customerEmail === 'Unknown') {
+        console.warn(`⚠️ Skipping payment-failed email: no customer email on order ${order.orderNumber}`);
+        return;
+    }
+
+    const mailOptions = {
+        from: `"CRAFTORIO" <${process.env.SENDER_EMAIL}>`,
+        to: order.customerEmail,
+        subject: `Complete Your Payment — Order ${order.orderNumber}`,
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 0; border-radius: 8px; overflow: hidden;">
+                <div style="background-color: #760000; padding: 24px; text-align: center;">
+                    <h1 style="color: #fff; margin: 0; font-size: 22px;">Payment Incomplete</h1>
+                </div>
+                <div style="padding: 28px 24px;">
+                    <p style="margin: 0 0 12px;">Hi ${order.deliveryInfo?.fullName || 'there'},</p>
+                    <p style="margin: 0 0 20px; color: #555;">It looks like your payment for order <strong>${order.orderNumber}</strong> wasn't completed. Don't worry — your order is saved and ready whenever you are.</p>
+
+                    <div style="background-color: #fff9f8; border: 1px solid #fcd5d5; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                        <p style="margin: 0 0 6px; font-size: 13px; color: #760000; font-weight: bold;">ORDER SUMMARY</p>
+                        <p style="margin: 0; font-size: 13px; color: #555;">Order: <strong>${order.orderNumber}</strong></p>
+                        <p style="margin: 4px 0 0; font-size: 13px; color: #555;">Total: <strong>₹${order.totalAmount}</strong></p>
+                    </div>
+
+                    <div style="text-align: center; margin: 28px 0;">
+                        <a href="${retryUrl}"
+                           style="display: inline-block; padding: 14px 36px; background-color: #760000; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px; letter-spacing: 0.5px;">
+                            Complete Your Payment
+                        </a>
+                    </div>
+
+                    <p style="font-size: 12px; color: #aaa; margin-top: 32px; text-align: center;">
+                        If you didn't place this order, please ignore this email.
+                    </p>
+                </div>
+            </div>
+        `,
+    };
+
+    return getTransporter().sendMail(mailOptions);
+};

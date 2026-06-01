@@ -76,14 +76,14 @@ export const OrderProvider = ({ children }) => {
         }
     };
 
-    const createStripeSession = async (items, deliveryInfo) => {
+    const createStripeSession = async (items, deliveryInfo, customerEmail) => {
         try {
             setLoading(true);
             const token = await getToken();
-            const response = await api.post('/orders/create-checkout-session', { items, deliveryInfo }, {
+            const response = await api.post('/orders/create-checkout-session', { items, deliveryInfo, customerEmail }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            return { success: true, url: response.data.url };
+            return { success: true, url: response.data.url, orderId: response.data.orderId };
         } catch (err) {
             return { success: false, error: err.response?.data?.message || 'Failed to start payment' };
         } finally {

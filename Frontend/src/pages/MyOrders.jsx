@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { useOrders } from '../contexts/OrderContext';
 import { formatPrice } from '../utils/formatPrice';
+import { getAuthToken } from '../services/api';
 import hero2 from '../assets/home/hero2.png?w=1400&format=webp&quality=82';
 
 const Icon = ({ children, className = 'w-4 h-4' }) => (
@@ -51,6 +52,8 @@ const STATUS_STYLES = {
   },
 };
 
+const PAYMENT_PENDING_BADGE = 'bg-red-50 text-red-700 border-red-200';
+
 const normalizeStatus = (status) => {
   const value = status || 'Processing';
   return ORDER_TABS.includes(value) ? value : 'Processing';
@@ -85,9 +88,11 @@ const MyOrders = () => {
   const { isLoaded, isSignedIn } = useUser();
   const { openSignIn } = useClerk();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { orders, fetchMyOrders, loading: ordersLoading } = useOrders();
   const [activeTab, setActiveTab] = useState('All Orders');
   const [sortBy, setSortBy] = useState('Most Recent');
+  const [retryingId, setRetryingId] = useState(null);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -100,6 +105,80 @@ const MyOrders = () => {
         navigate('/', { replace: true });
     }
   }, [fetchMyOrders, isLoaded, isSignedIn, navigate, openSignIn]);
+
+  // Handle return from Stripe: ?payment=cancelled&orderId=X  or  ?retry=X
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+
+    const payment = searchParams.get('payment');
+    const orderId = searchParams.get('orderId');
+    const retryId = searchParams.get('retry');
+
+    // Clean URL immediately
+    if (payment || retryId) {
+      window.history.replaceState({}, '', '/my-orders');
+    }
+
+    const callApi = async (url, method = 'POST') => {
+      const token = await getAuthToken();
+      const res = await fetch(`${import.meta.env.VITE_API_URL}${url}`, {
+        method,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.json();
+    };
+
+    // User cancelled Stripe checkout → mark pending + send email
+    if (payment === 'cancelled' && orderId) {
+      callApi(`/orders/${orderId}/mark-payment-pending`)
+        .then(() => {
+          fetchMyOrders(); // Refresh list to show 'Payment Pending' immediately
+        })
+        .catch(() => {});
+      toast.error('Payment was not completed. Complete it any time from your orders.', { duration: 6000 });
+    }
+
+    // Email retry link → auto-open a new Stripe session
+    if (retryId) {
+      (async () => {
+        try {
+          setRetryingId(retryId);
+          const data = await callApi(`/orders/${retryId}/retry-payment`);
+          if (data.url) {
+            window.location.href = data.url;
+          } else {
+            toast.error('Could not start payment. Please try again.');
+          }
+        } catch {
+          toast.error('Something went wrong. Please try again.');
+        } finally {
+          setRetryingId(null);
+        }
+      })();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, isSignedIn]);
+
+  const handleCompletePayment = useCallback(async (orderId) => {
+    try {
+      setRetryingId(orderId);
+      const token = await getAuthToken();
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/retry-payment`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error('Could not start payment. Please try again.');
+      }
+    } catch {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setRetryingId(null);
+    }
+  }, []);
 
   const enrichedOrders = useMemo(
     () =>
@@ -322,33 +401,52 @@ const MyOrders = () => {
                           </div>
 
                           <div className="flex w-full flex-col gap-3 rounded-lg bg-gray-50 p-3 md:w-48 md:items-end md:bg-transparent md:p-0">
-                            <span
-                              className={`inline-block w-fit rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${style.badge}`}
-                            >
-                              {status}
-                            </span>
+                            {/* Payment Pending overrides the order status badge */}
+                            {order.paymentStatus === 'Payment Pending' || order.paymentStatus === 'Unpaid' ? (
+                              <span className={`inline-block w-fit rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${PAYMENT_PENDING_BADGE}`}>
+                                Payment Pending
+                              </span>
+                            ) : (
+                              <span className={`inline-block w-fit rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${style.badge}`}>
+                                {status}
+                              </span>
+                            )}
                             <p className="font-sans text-[11px] leading-relaxed text-gray-500 md:text-right">
-                              {style.getMessage(formatShortDate(deliveryDate))}
+                              {order.paymentStatus === 'Payment Pending' || order.paymentStatus === 'Unpaid'
+                                ? 'Payment not completed'
+                                : style.getMessage(formatShortDate(deliveryDate))}
                             </p>
-                            <button
-                               type="button"
-                               disabled={status === 'Delivered' || status === 'Completed' || status === 'Cancelled' || ordersLoading}
-                               onClick={async () => {
-                                 if (style.action === 'TRACK ORDER') {
-                                   await fetchMyOrders();
-                                   toast.success('Status updated successfully');
-                                 } else if (style.action === 'REORDER') {
-                                   toast('Reorder feature coming soon!');
-                                 }
-                               }}
-                               className={`w-full rounded-lg border-2 px-5 py-2.5 font-sans text-[11px] font-bold uppercase tracking-wider transition md:w-auto ${
-                                 status === 'Delivered' || status === 'Completed' || status === 'Cancelled'
-                                   ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
-                                   : 'border-[#760000] text-[#760000] hover:bg-red-50'
-                               }`}
-                             >
-                               {style.action}
-                             </button>
+                            {/* Complete Payment button for unpaid orders */}
+                            {(order.paymentStatus === 'Payment Pending' || order.paymentStatus === 'Unpaid') ? (
+                              <button
+                                type="button"
+                                disabled={retryingId === (order._id || order.id)}
+                                onClick={() => handleCompletePayment(order._id || order.id)}
+                                className="w-full rounded-lg border-2 border-[#760000] bg-[#760000] px-5 py-2.5 font-sans text-[11px] font-bold uppercase tracking-wider text-white transition hover:bg-[#5e0000] disabled:opacity-60 disabled:cursor-not-allowed md:w-auto"
+                              >
+                                {retryingId === (order._id || order.id) ? 'Redirecting…' : 'Complete Payment'}
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={status === 'Delivered' || status === 'Completed' || status === 'Cancelled' || ordersLoading}
+                                onClick={async () => {
+                                  if (style.action === 'TRACK ORDER') {
+                                    await fetchMyOrders();
+                                    toast.success('Status updated successfully');
+                                  } else if (style.action === 'REORDER') {
+                                    toast('Reorder feature coming soon!');
+                                  }
+                                }}
+                                className={`w-full rounded-lg border-2 px-5 py-2.5 font-sans text-[11px] font-bold uppercase tracking-wider transition md:w-auto ${
+                                  status === 'Delivered' || status === 'Completed' || status === 'Cancelled'
+                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+                                    : 'border-[#760000] text-[#760000] hover:bg-red-50'
+                                }`}
+                              >
+                                {style.action}
+                              </button>
+                            )}
                           </div>
                         </div>
                       </article>

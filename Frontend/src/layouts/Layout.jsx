@@ -6,6 +6,7 @@ import SEO from '../components/SEO';
 import { Toaster } from 'react-hot-toast';
 import SubscribeModal from '../components/SubscribeModal';
 import UserSync from '../components/UserSync';
+import Chatbot from '../components/Chatbot';
 import { useClerkMount } from '../providers/LazyClerk';
 
 const ScrollToTop = () => {
@@ -34,6 +35,7 @@ const Layout = () => {
       <Navbar />
       <Toaster toastOptions={{ ariaProps: { role: 'status', 'aria-live': 'polite' } }} />
       <SubscribeModal />
+      <Chatbot />
 
       <main id="main-content" className="flex-grow" tabIndex={-1}>
         <Outlet />

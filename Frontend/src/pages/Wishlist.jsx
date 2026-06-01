@@ -5,8 +5,8 @@ import { ArrowRight, CheckCircle2, Gift, Heart, Pencil, Share2, Trash2, Truck, I
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { formatPrice } from '../utils/formatPrice';
-import wishlistHero from '../assets/home/Wishlist.png?w=1800&format=webp&quality=82';
-import touchImage from '../assets/home/Touch.png?w=1200&format=webp&quality=82';
+import wishlistHero from '../assets/home/Wishlist.png';
+import touchImage from '../assets/home/Touch.png';
 
 const trustItems = [
   {
@@ -62,11 +62,12 @@ const Wishlist = () => {
 
   return (
     <div className="min-h-screen bg-white pb-0 text-gray-950">
-      <section className="relative flex min-h-[320px] items-center overflow-hidden border-b border-gray-100 bg-[#fffafa] pt-24 sm:min-h-[360px] sm:pt-28 lg:pt-28">
+      <section className="relative flex min-h-[320px] items-center overflow-hidden border-b border-gray-100 bg-[#fffafa] pt-24 sm:min-h-[360px] sm:pt-28 lg:min-h-[440px] lg:pt-28">
         <img
           src={wishlistHero}
           alt=""
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[8%_center] sm:object-[center_45%]"
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          style={{ objectFit: 'fill' }}
           aria-hidden="true"
         />
 

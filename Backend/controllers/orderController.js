@@ -32,7 +32,7 @@ exports.createOrder = async (req, res, next) => {
 // @access  Private
 exports.createCheckoutSession = async (req, res, next) => {
     try {
-        const { items, deliveryInfo } = req.body;
+        const { items, deliveryInfo, customerEmail: providedEmail } = req.body;
         const userId = req.auth.userId;
 
         const line_items = items.map((item) => {
@@ -59,12 +59,13 @@ exports.createCheckoutSession = async (req, res, next) => {
         const totalAmount = line_items.reduce((sum, item) => sum + (item.price_data.unit_amount * item.quantity), 0) / 100;
 
         const user = await User.findOne({ clerkId: userId });
+        const finalCustomerEmail = providedEmail || (user ? user.email : 'Unknown');
 
         // Create initial order in DB
         const order = await Order.create({
             orderNumber,
             userId,
-            customerEmail: user ? user.email : 'Unknown',
+            customerEmail: finalCustomerEmail,
             items: items.map(i => ({
                 productId: i.productId,
                 name: i.name,
@@ -76,7 +77,8 @@ exports.createCheckoutSession = async (req, res, next) => {
             totalAmount,
             deliveryInfo,
             paymentStatus: 'Unpaid',
-            status: 'Processing'
+            status: 'Processing',
+            expiresAt: new Date(Date.now() + 15 * 60 * 1000) // Auto-delete in 15 mins if not paid
         });
 
         console.log(`Order created in DB: ${orderNumber}`);
@@ -95,10 +97,11 @@ exports.createCheckoutSession = async (req, res, next) => {
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
+            customer_email: finalCustomerEmail === 'Unknown' ? undefined : finalCustomerEmail,
             line_items,
             mode: 'payment',
             success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.FRONTEND_URL}/cart`,
+            cancel_url: `${process.env.FRONTEND_URL}/my-orders?payment=cancelled&orderId=${order._id}`,
             invoice_creation: {
                 enabled: true,
             },
@@ -114,7 +117,7 @@ exports.createCheckoutSession = async (req, res, next) => {
         order.stripeSessionId = session.id;
         await order.save();
 
-        res.status(200).json({ id: session.id, url: session.url });
+        res.status(200).json({ id: session.id, url: session.url, orderId: order._id });
     } catch (error) {
         next(error);
     }
@@ -222,3 +225,91 @@ exports.deleteOrder = async (req, res, next) => {
         next(error);
     }
 };
+
+// @desc    Mark order as Payment Pending and send failure email
+// @route   POST /api/orders/:id/mark-payment-pending
+// @access  Private
+exports.markPaymentPending = async (req, res, next) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+        if (order.userId !== req.auth.userId) {
+            return res.status(403).json({ success: false, message: 'Not authorized' });
+        }
+        // If already paid, do nothing — edge case where payment succeeded after user clicked back
+        if (order.paymentStatus === 'Paid') {
+            return res.status(200).json({ success: true, data: order });
+        }
+
+        order.paymentStatus = 'Payment Pending';
+        await order.save();
+
+        console.log(`[ORDER] Order ${order.orderNumber} marked as pending. Email: ${order.customerEmail}`);
+
+        // Build retry link that MyOrders page will detect and auto-redirect
+        const retryUrl = `${process.env.FRONTEND_URL}/my-orders?retry=${order._id}`;
+
+        const { sendPaymentFailedEmail } = require('../utils/emailService');
+        sendPaymentFailedEmail(order, retryUrl)
+            .then(() => console.log(`✅ Payment-failed email sent for ${order.orderNumber} to ${order.customerEmail}`))
+            .catch((err) => console.error(`❌ Failed to send payment-failed email for ${order.orderNumber}:`, err.message));
+
+        res.status(200).json({ success: true, data: order });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Create a new Stripe checkout session for an existing unpaid/pending order
+// @route   POST /api/orders/:id/retry-payment
+// @access  Private
+exports.retryPayment = async (req, res, next) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+        if (order.userId !== req.auth.userId) {
+            return res.status(403).json({ success: false, message: 'Not authorized' });
+        }
+        if (order.paymentStatus === 'Paid') {
+            return res.status(400).json({ success: false, message: 'Order is already paid' });
+        }
+
+        const line_items = order.items.map((item) => ({
+            price_data: {
+                currency: 'inr',
+                product_data: {
+                    name: item.name,
+                    images: item.image ? [item.image] : [],
+                },
+                unit_amount: Math.round(Number(item.price) * 100),
+            },
+            quantity: item.quantity,
+        }));
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            customer_email: order.customerEmail === 'Unknown' ? undefined : order.customerEmail,
+            line_items,
+            mode: 'payment',
+            success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${process.env.FRONTEND_URL}/my-orders?payment=cancelled&orderId=${order._id}`,
+            invoice_creation: { enabled: true },
+            metadata: {
+                userId: order.userId,
+                orderId: order._id.toString(),
+                orderNumber: order.orderNumber,
+                deliveryInfo: JSON.stringify(order.deliveryInfo),
+            },
+        });
+
+        order.stripeSessionId = session.id;
+        order.paymentStatus = 'Unpaid';
+        order.expiresAt = new Date(Date.now() + 15 * 60 * 1000); // Give another 15 mins for the retry
+        await order.save();
+
+        res.status(200).json({ success: true, url: session.url });
+    } catch (error) {
+        next(error);
+    }
+};
+
