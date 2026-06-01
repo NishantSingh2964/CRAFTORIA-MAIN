@@ -1,16 +1,27 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Bell, CalendarDays, Menu, Search, UserRound } from 'lucide-react';
+import { Bell, CalendarDays, Menu, Search, UserRound, AlertCircle } from 'lucide-react';
 import { useUser } from '@clerk/clerk-react';
 import { Toaster } from 'react-hot-toast';
 import AdminSidebar from './AdminSidebar';
 import { useNotifications } from '../../contexts/NotificationContext';
+import { useOrders } from '../../contexts/OrderContext';
 import { Link } from 'react-router-dom';
 
 const AdminLayout = () => {
   const { user } = useUser();
-  const { unreadCount } = useNotifications();
+  const { unreadCount, fetchNotifications } = useNotifications();
+  const { adminOrders, fetchAllOrders } = useOrders();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+
+  React.useEffect(() => {
+    fetchAllOrders();
+    fetchNotifications();
+  }, []);
+
+  const pendingCancellations = useMemo(() => {
+    return adminOrders.filter(o => o.status === 'Cancellation Requested').length;
+  }, [adminOrders]);
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
@@ -42,6 +53,18 @@ const AdminLayout = () => {
           </div>
 
           <div className="flex items-center gap-5">
+            <Link 
+              to="/admin/cancellation-requests"
+              className="relative grid h-10 w-10 place-items-center rounded-full text-[#9a1515] transition hover:bg-[#fff3ef]" 
+              title="Cancellation Requests"
+            >
+              <AlertCircle className="h-5 w-5" />
+              {pendingCancellations > 0 && (
+                <span className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-orange-600 text-[10px] font-bold text-white ring-2 ring-white">
+                  {pendingCancellations}
+                </span>
+              )}
+            </Link>
             <Link 
               to="/admin/notifications"
               className="relative grid h-10 w-10 place-items-center rounded-full text-[#9a1515] transition hover:bg-[#fff3ef]" 

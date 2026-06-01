@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { useOrders } from '../contexts/OrderContext';
 import { formatPrice } from '../utils/formatPrice';
-import { getAuthToken } from '../services/api';
+import api from '../services/api';
 import hero2 from '../assets/home/hero2.png?w=1400&format=webp&quality=82';
 
 const Icon = ({ children, className = 'w-4 h-4' }) => (
@@ -22,7 +22,7 @@ const Icon = ({ children, className = 'w-4 h-4' }) => (
   </svg>
 );
 
-const ORDER_TABS = ['All Orders', 'Processing', 'Shipped', 'Delivered', 'Completed', 'Cancelled'];
+const ORDER_TABS = ['All Orders', 'Processing', 'Cancellation Requested', 'Shipped', 'Delivered', 'Completed', 'Cancelled'];
 
 const STATUS_STYLES = {
   Delivered: {
@@ -49,6 +49,11 @@ const STATUS_STYLES = {
     badge: 'bg-gray-100 text-gray-600 border-gray-200',
     action: 'CANCEL ORDER',
     getMessage: () => 'This order was cancelled',
+  },
+  'Cancellation Requested': {
+    badge: 'bg-amber-50 text-amber-700 border-amber-200',
+    action: 'CANCELLATION INITIATED',
+    getMessage: () => 'Waiting for admin approval',
   },
 };
 
@@ -89,10 +94,47 @@ const MyOrders = () => {
   const { openSignIn } = useClerk();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { orders, fetchMyOrders, loading: ordersLoading } = useOrders();
+  const { orders, fetchMyOrders, cancelOrder, loading: ordersLoading } = useOrders();
   const [activeTab, setActiveTab] = useState('All Orders');
   const [sortBy, setSortBy] = useState('Most Recent');
   const [retryingId, setRetryingId] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
+  const [withdrawingId, setWithdrawingId] = useState(null);
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order? ₹50 will be deducted as a cancellation fee if already paid.')) return;
+
+    try {
+      setCancellingId(orderId);
+      const res = await cancelOrder(orderId);
+      if (res.success) {
+        toast.success(res.message || 'Order cancelled successfully');
+      } else {
+        toast.error(res.error || 'Failed to cancel order');
+      }
+    } catch {
+      toast.error('Something went wrong');
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
+  const handleWithdrawCancel = async (orderId) => {
+    if (!window.confirm('Do you want to withdraw your cancellation request?')) return;
+
+    try {
+      setWithdrawingId(orderId);
+      const res = await api.post(`/orders/${orderId}/withdraw-cancel`);
+      if (res.data.success) {
+        toast.success('Cancellation request withdrawn');
+        fetchMyOrders();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to withdraw request');
+    } finally {
+      setWithdrawingId(null);
+    }
+  };
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -120,12 +162,11 @@ const MyOrders = () => {
     }
 
     const callApi = async (url, method = 'POST') => {
-      const token = await getAuthToken();
-      const res = await fetch(`${import.meta.env.VITE_API_URL}${url}`, {
+      const res = await api({
+        url,
         method,
-        headers: { Authorization: `Bearer ${token}` },
       });
-      return res.json();
+      return res.data;
     };
 
     // User cancelled Stripe checkout → mark pending + send email
@@ -162,12 +203,8 @@ const MyOrders = () => {
   const handleCompletePayment = useCallback(async (orderId) => {
     try {
       setRetryingId(orderId);
-      const token = await getAuthToken();
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/retry-payment`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const res = await api.post(`/orders/${orderId}/retry-payment`);
+      const data = res.data;
       if (data.url) {
         window.location.href = data.url;
       } else {
@@ -209,16 +246,11 @@ const MyOrders = () => {
 
   const handleDownload = async (orderId, orderNumber) => {
     try {
-      const { getAuthToken } = await import('../services/api');
-      const token = await getAuthToken();
-      
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}/invoice/download`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await api.get(`/orders/${orderId}/invoice/download`, {
+        responseType: 'blob'
       });
 
-      if (!response.ok) throw new Error('Download failed');
-
-      const blob = await response.blob();
+      const blob = response.data;
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -402,21 +434,29 @@ const MyOrders = () => {
 
                           <div className="flex w-full flex-col gap-3 rounded-lg bg-gray-50 p-3 md:w-48 md:items-end md:bg-transparent md:p-0">
                             {/* Payment Pending overrides the order status badge */}
-                            {order.paymentStatus === 'Payment Pending' || order.paymentStatus === 'Unpaid' ? (
-                              <span className={`inline-block w-fit rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${PAYMENT_PENDING_BADGE}`}>
-                                Payment Pending
-                              </span>
-                            ) : (
-                              <span className={`inline-block w-fit rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${style.badge}`}>
-                                {status}
-                              </span>
-                            )}
+                             {order.paymentStatus === 'Payment Pending' || order.paymentStatus === 'Unpaid' ? (
+                               <span className={`inline-block w-fit rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${PAYMENT_PENDING_BADGE}`}>
+                                 Payment Pending
+                               </span>
+                             ) : order.paymentStatus === 'Refunded' ? (
+                               <span className="inline-block w-fit rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-purple-700">
+                                 Refunded
+                               </span>
+                             ) : status === 'Cancellation Requested' ? (
+                               <span className="inline-block w-fit rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-700">
+                                 Cancellation Requested
+                               </span>
+                             ) : (
+                               <span className={`inline-block w-fit rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${style.badge}`}>
+                                 {status}
+                               </span>
+                             )}
                             <p className="font-sans text-[11px] leading-relaxed text-gray-500 md:text-right">
                               {order.paymentStatus === 'Payment Pending' || order.paymentStatus === 'Unpaid'
                                 ? 'Payment not completed'
                                 : style.getMessage(formatShortDate(deliveryDate))}
                             </p>
-                            {/* Complete Payment button for unpaid orders */}
+                             {/* Complete Payment button for unpaid orders */}
                             {(order.paymentStatus === 'Payment Pending' || order.paymentStatus === 'Unpaid') ? (
                               <button
                                 type="button"
@@ -427,25 +467,42 @@ const MyOrders = () => {
                                 {retryingId === (order._id || order.id) ? 'Redirecting…' : 'Complete Payment'}
                               </button>
                             ) : (
-                              <button
-                                type="button"
-                                disabled={status === 'Delivered' || status === 'Completed' || status === 'Cancelled' || ordersLoading}
-                                onClick={async () => {
-                                  if (style.action === 'TRACK ORDER') {
-                                    await fetchMyOrders();
-                                    toast.success('Status updated successfully');
-                                  } else if (style.action === 'REORDER') {
-                                    toast('Reorder feature coming soon!');
-                                  }
-                                }}
-                                className={`w-full rounded-lg border-2 px-5 py-2.5 font-sans text-[11px] font-bold uppercase tracking-wider transition md:w-auto ${
-                                  status === 'Delivered' || status === 'Completed' || status === 'Cancelled'
-                                    ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
-                                    : 'border-[#760000] text-[#760000] hover:bg-red-50'
-                                }`}
-                              >
-                                {style.action}
-                              </button>
+                              <div className="flex flex-col gap-2 w-full md:w-auto">
+                                <button
+                                  type="button"
+                                  disabled={status === 'Delivered' || status === 'Completed' || status === 'Cancelled' || (status === 'Cancellation Requested' && withdrawingId === (order._id || order.id)) || ordersLoading}
+                                  onClick={async () => {
+                                    if (status === 'Cancellation Requested') {
+                                      handleWithdrawCancel(order._id || order.id);
+                                    } else if (style.action === 'TRACK ORDER') {
+                                      await fetchMyOrders();
+                                      toast.success('Status updated successfully');
+                                    } else if (style.action === 'REORDER') {
+                                      toast('Reorder feature coming soon!');
+                                    }
+                                  }}
+                                  className={`w-full rounded-lg border-2 px-5 py-2.5 font-sans text-[11px] font-bold uppercase tracking-wider transition md:w-auto ${
+                                    status === 'Delivered' || status === 'Completed' || status === 'Cancelled'
+                                      ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+                                      : status === 'Cancellation Requested'
+                                      ? 'border-amber-600 bg-amber-600 text-white hover:bg-amber-700'
+                                      : 'border-[#760000] text-[#760000] hover:bg-red-50'
+                                  }`}
+                                >
+                                  {status === 'Cancellation Requested' ? (withdrawingId === (order._id || order.id) ? 'Removing...' : 'Remove Request') : style.action}
+                                </button>
+                                
+                                {status === 'Processing' && (
+                                  <button
+                                    type="button"
+                                    disabled={cancellingId === (order._id || order.id)}
+                                    onClick={() => handleCancelOrder(order._id || order.id)}
+                                    className="w-full rounded-lg border-2 border-red-100 bg-red-50 px-5 py-2.5 font-sans text-[11px] font-bold uppercase tracking-wider text-red-600 transition hover:bg-red-100 disabled:opacity-60 md:w-auto"
+                                  >
+                                    {cancellingId === (order._id || order.id) ? 'Requesting...' : 'Cancel Order'}
+                                  </button>
+                                )}
+                              </div>
                             )}
                           </div>
                         </div>

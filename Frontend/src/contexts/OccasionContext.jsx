@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
-import { getAuthToken } from '../services/api';
 
 const OccasionContext = createContext();
 
@@ -29,10 +28,8 @@ export const OccasionProvider = ({ children }) => {
     const addOccasion = async (formData) => {
         try {
             setLoading(true);
-            const token = await getAuthToken();
             const response = await api.post('/occasions/admin', formData, {
                 headers: { 
-                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
                 }
             });
@@ -48,10 +45,8 @@ export const OccasionProvider = ({ children }) => {
     const updateOccasion = async (id, formData) => {
         try {
             setLoading(true);
-            const token = await getAuthToken();
             const response = await api.patch(`/occasions/admin/${id}`, formData, {
                 headers: { 
-                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
                 }
             });
@@ -66,10 +61,7 @@ export const OccasionProvider = ({ children }) => {
 
     const deleteOccasion = async (id) => {
         try {
-            const token = await getAuthToken();
-            await api.delete(`/occasions/admin/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/occasions/admin/${id}`);
             setOccasions(prev => prev.filter(o => o._id !== id));
             return { success: true };
         } catch (err) {

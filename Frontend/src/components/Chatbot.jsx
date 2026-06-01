@@ -4,7 +4,7 @@ import { WEBSITE_INFO } from '../data/websiteInfo';
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: `Hi! I'm your Craftorio assistant. How can I help you today?` }
+    { role: 'assistant', content: `Hi! I'm your Craftoria assistant. How can I help you today?` }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -79,7 +79,7 @@ const Chatbot = () => {
                 C
               </div>
               <div>
-                <h3 className="font-semibold text-sm">Craftorio Assistant</h3>
+                <h3 className="font-semibold text-sm">Craftoria Assistant</h3>
                 <p className="text-[11px] text-white/70">Online | Answers in seconds</p>
               </div>
             </div>
@@ -150,13 +150,10 @@ const Chatbot = () => {
                 className="absolute right-2 p-2 rounded-full bg-[#760000] text-white disabled:bg-gray-300 transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </button>
             </div>
-            <p className="text-[10px] text-gray-400 text-center mt-3">
-              Powered by OpenRouter AI
-            </p>
           </div>
         </div>
       )}

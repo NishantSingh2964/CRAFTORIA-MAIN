@@ -19,6 +19,8 @@ const getTransporter = () => {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
+        connectionTimeout: 10000, // 10 seconds
+        greetingTimeout: 10000,   // 10 seconds
     });
     return transporter;
 };
@@ -156,6 +158,118 @@ exports.sendPaymentFailedEmail = async (order, retryUrl) => {
                         If you didn't place this order, please ignore this email.
                     </p>
                 </div>
+            </div>
+        `,
+    };
+
+    return getTransporter().sendMail(mailOptions);
+};
+
+/**
+ * Sends an order cancellation email to the user
+ */
+exports.sendOrderCancellationEmail = async (order, cancellationFee = 0) => {
+    if (!order.customerEmail || order.customerEmail === 'Unknown') return;
+
+    const refundAmount = Math.max(0, order.totalAmount - cancellationFee);
+
+    const mailOptions = {
+        from: `"CRAFTORIO" <${process.env.SENDER_EMAIL}>`,
+        to: order.customerEmail,
+        subject: `Order Cancelled - ${order.orderNumber}`,
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: #760000; margin: 0;">Order Cancelled</h2>
+                    <p style="color: #666; margin-top: 5px;">Order #${order.orderNumber}</p>
+                </div>
+
+                <p>Hi ${order.deliveryInfo?.fullName || 'Customer'},</p>
+                <p>Your order has been successfully cancelled as per your request.</p>
+
+                <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h4 style="margin: 0 0 10px 0; color: #333;">Refund Summary</h4>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 5px 0; color: #666;">Original Amount:</td>
+                            <td style="padding: 5px 0; text-align: right; font-weight: bold;">₹${order.totalAmount}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px 0; color: #666;">Cancellation Fee:</td>
+                            <td style="padding: 5px 0; text-align: right; color: #760000;">-₹${cancellationFee}</td>
+                        </tr>
+                        <tr style="border-top: 1px solid #ddd;">
+                            <td style="padding: 10px 0 0 0; font-weight: bold; color: #333;">Estimated Refund:</td>
+                            <td style="padding: 10px 0 0 0; text-align: right; font-weight: bold; color: #22c55e; font-size: 18px;">₹${refundAmount}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <p style="font-size: 13px; color: #666;">
+                    * The refund will be credited back to your original payment method within 5-7 business days.
+                </p>
+
+                <div style="margin-top: 30px; text-align: center; border-t: 1px solid #eee; padding-top: 20px;">
+                    <p style="font-size: 12px; color: #888;">
+                        Thank you for using CRAFTORIO. We hope to see you again soon!
+                    </p>
+                </div>
+            </div>
+        `,
+    };
+
+    return getTransporter().sendMail(mailOptions);
+};
+
+/**
+ * Sends an email to the user when they request a cancellation
+ */
+exports.sendCancellationRequestedEmail = async (order) => {
+    if (!order.customerEmail || order.customerEmail === 'Unknown') return;
+
+    const mailOptions = {
+        from: `"CRAFTORIO" <${process.env.SENDER_EMAIL}>`,
+        to: order.customerEmail,
+        subject: `Cancellation Requested - Order ${order.orderNumber}`,
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
+                <h2 style="color: #760000; text-align: center;">Cancellation Requested</h2>
+                <p>Hi ${order.deliveryInfo?.fullName || 'Customer'},</p>
+                <p>We have received your request to cancel order <strong>${order.orderNumber}</strong>.</p>
+                <p>Our team is currently reviewing your request. You will receive another email once the cancellation is approved and the refund is initiated.</p>
+                <div style="background-color: #fff9f8; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #eadbd6;">
+                    <p style="margin: 0; color: #760000; font-weight: bold;">What's next?</p>
+                    <p style="margin: 5px 0 0 0; font-size: 14px;">1. Admin reviews the request.<br>2. If approved, refund is processed minus a nominal fee.<br>3. You receive a confirmation email.</p>
+                </div>
+                <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">
+                    If you change your mind, you can withdraw your request from the "My Orders" page.
+                </p>
+            </div>
+        `,
+    };
+
+    return getTransporter().sendMail(mailOptions);
+};
+
+/**
+ * Sends an email to the user when they withdraw a cancellation request
+ */
+exports.sendCancellationWithdrawnEmail = async (order) => {
+    if (!order.customerEmail || order.customerEmail === 'Unknown') return;
+
+    const mailOptions = {
+        from: `"CRAFTORIO" <${process.env.SENDER_EMAIL}>`,
+        to: order.customerEmail,
+        subject: `Cancellation Request Withdrawn - Order ${order.orderNumber}`,
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
+                <h2 style="color: #22c55e; text-align: center;">Request Withdrawn</h2>
+                <p>Hi ${order.deliveryInfo?.fullName || 'Customer'},</p>
+                <p>Your cancellation request for order <strong>${order.orderNumber}</strong> has been successfully withdrawn.</p>
+                <p>Your order is back in <strong>Processing</strong> status and will be prepared for shipment soon.</p>
+                <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">
+                    Thank you for choosing CRAFTORIO!
+                </p>
             </div>
         `,
     };

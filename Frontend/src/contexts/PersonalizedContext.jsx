@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
 import api from '../services/api';
-import { getAuthToken } from '../services/api';
 
 const PersonalizedContext = createContext();
 
@@ -8,8 +7,6 @@ export const PersonalizedProvider = ({ children }) => {
     const [personalizedProducts, setPersonalizedProducts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-
-    const getToken = getAuthToken;
 
     const fetchPersonalizedProducts = async () => {
         try {
@@ -27,10 +24,8 @@ export const PersonalizedProvider = ({ children }) => {
     const addPersonalizedProduct = async (formData) => {
         try {
             setLoading(true);
-            const token = await getToken();
             const response = await api.post('/personalized-products', formData, {
                 headers: { 
-                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
                 }
             });
@@ -45,10 +40,7 @@ export const PersonalizedProvider = ({ children }) => {
 
     const deletePersonalizedProduct = async (id) => {
         try {
-            const token = await getToken();
-            await api.delete(`/personalized-products/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/personalized-products/${id}`);
             setPersonalizedProducts(prev => prev.filter(p => p._id !== id));
             return { success: true };
         } catch (err) {

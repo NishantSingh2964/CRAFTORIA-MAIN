@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
-import { getAuthToken } from '../services/api';
 
 const NotificationContext = createContext();
 
@@ -12,10 +11,7 @@ export const NotificationProvider = ({ children }) => {
     const fetchNotifications = async () => {
         try {
             setLoading(true);
-            const token = await getAuthToken();
-            const response = await api.get('/notifications', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/notifications');
             console.log('--- NOTIFICATIONS FETCHED ---', {
               count: response.data.unreadCount,
               total: response.data.data.length
@@ -31,10 +27,7 @@ export const NotificationProvider = ({ children }) => {
 
     const markAllAsRead = async () => {
         try {
-            const token = await getAuthToken();
-            await api.patch('/notifications/read', {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.patch('/notifications/read');
             setUnreadCount(0);
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
         } catch (err) {
@@ -44,10 +37,7 @@ export const NotificationProvider = ({ children }) => {
 
     const deleteNotification = async (id) => {
         try {
-            const token = await getAuthToken();
-            await api.delete(`/notifications/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/notifications/${id}`);
             setNotifications(prev => prev.filter(n => n._id !== id));
             // Recalculate unread if the deleted one was unread
             const deletedWasUnread = notifications.find(n => n._id === id)?.isRead === false;

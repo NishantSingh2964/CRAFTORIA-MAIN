@@ -36,8 +36,6 @@ const AdminRoute = ({ children }) => {
           email: user.primaryEmailAddress?.emailAddress,
           name: user.fullName,
           avatar: user.imageUrl
-        }, {
-            headers: { Authorization: `Bearer ${token}` }
         });
         
         const userRole = response.data.data?.role;

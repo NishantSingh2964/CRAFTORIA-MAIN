@@ -48,6 +48,7 @@ const AdminNotifications = lazy(() => import('./pages/admin/Notifications'));
 const AdminPersonalizedProducts = lazy(() => import('./pages/admin/PersonalizedProducts'));
 const AdminAddPersonalizedProduct = lazy(() => import('./pages/admin/AddPersonalizedProduct'));
 const AdminEditPersonalizedProduct = lazy(() => import('./pages/admin/EditPersonalizedProduct'));
+const AdminCancellationRequests = lazy(() => import('./pages/admin/CancellationRequests'));
 
 const PageFallback = () => <Loader message="Arranging your gifts..." />;
 
@@ -108,6 +109,7 @@ const App = () => {
                             <Route path="personalized-products" element={<AdminPersonalizedProducts />} />
                             <Route path="personalized-products/add" element={<AdminAddPersonalizedProduct />} />
                             <Route path="personalized-products/edit/:id" element={<AdminEditPersonalizedProduct />} />
+                            <Route path="cancellation-requests" element={<AdminCancellationRequests />} />
                           </Route>
 
 

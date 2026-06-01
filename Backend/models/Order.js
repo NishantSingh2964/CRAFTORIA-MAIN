@@ -47,7 +47,7 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Processing', 'Shipped', 'Delivered', 'Completed', 'Cancelled'],
+        enum: ['Processing', 'Shipped', 'Delivered', 'Completed', 'Cancelled', 'Cancellation Requested'],
         default: 'Processing'
     },
     deliveryInfo: {
@@ -60,10 +60,13 @@ const orderSchema = new mongoose.Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['Paid', 'Unpaid', 'Payment Pending', 'Refunded'],
+        enum: ['Paid', 'Unpaid', 'Payment Pending', 'Refunded', 'Cancelled'],
         default: 'Unpaid'
     },
     stripeSessionId: {
+        type: String
+    },
+    paymentIntentId: {
         type: String
     },
     invoiceUrl: {

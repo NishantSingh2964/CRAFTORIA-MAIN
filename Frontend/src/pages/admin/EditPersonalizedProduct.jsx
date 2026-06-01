@@ -5,7 +5,6 @@ import { usePersonalized } from '../../contexts/PersonalizedContext';
 import { useOccasions } from '../../contexts/OccasionContext';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
-import { getAuthToken } from '../../services/api';
 import { compressImage } from '../../utils/imageCompressor';
 
 const CATEGORIES = [
@@ -103,7 +102,6 @@ const EditPersonalizedProduct = () => {
     setLoading(true);
     
     try {
-        const token = await getAuthToken();
         const submissionData = new FormData();
         Object.keys(formData).forEach(key => submissionData.append(key, formData[key]));
         if (file) submissionData.append('image', file);
@@ -111,7 +109,6 @@ const EditPersonalizedProduct = () => {
 
         await api.put(`/personalized-products/${id}`, submissionData, {
             headers: { 
-                Authorization: `Bearer ${token}`,
                 'Content-Type': 'multipart/form-data'
             }
         });

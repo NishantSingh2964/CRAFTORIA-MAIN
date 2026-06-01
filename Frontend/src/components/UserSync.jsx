@@ -1,9 +1,15 @@
-import { useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
+import { setTokenGetter } from '../services/api';
+import { useEffect } from 'react';
 
 const UserSync = () => {
   const { user, isLoaded, isSignedIn } = useUser();
   const { getToken } = useAuth();
+
+  useEffect(() => {
+    // Register the token getter with our API service so all requests are authenticated
+    setTokenGetter(getToken);
+  }, [getToken]);
 
   useEffect(() => {
     const syncUser = async () => {

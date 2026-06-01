@@ -46,6 +46,7 @@ exports.handleStripeWebhook = async (req, res) => {
             }
 
             order.paymentStatus = 'Paid';
+            order.paymentIntentId = session.payment_intent;
             order.invoiceUrl = invoiceUrl;
             order.receiptUrl = receiptUrl;
             order.expiresAt = undefined; // STOP THE AUTO-DELETE TIMER

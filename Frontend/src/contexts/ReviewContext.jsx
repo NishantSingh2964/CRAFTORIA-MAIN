@@ -1,12 +1,10 @@
 import React, { createContext, useContext, useState } from 'react';
 import api from '../services/api';
-import { getAuthToken } from '../services/api';
 import toast from 'react-hot-toast';
 
 const ReviewContext = createContext();
 
 export const ReviewProvider = ({ children }) => {
-    const getToken = getAuthToken;
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -27,10 +25,7 @@ export const ReviewProvider = ({ children }) => {
     const submitReview = async (reviewData) => {
         try {
             setLoading(true);
-            const token = await getToken();
-            const response = await api.post('/reviews', reviewData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.post('/reviews', reviewData);
             setReviews(prev => [response.data.data, ...prev]);
             toast.success('Review submitted successfully!');
             return { success: true, data: response.data.data };
@@ -46,10 +41,7 @@ export const ReviewProvider = ({ children }) => {
     const deleteReview = async (reviewId) => {
         try {
             setLoading(true);
-            const token = await getToken();
-            await api.delete(`/reviews/${reviewId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/reviews/${reviewId}`);
             setReviews(prev => prev.filter(r => r._id !== reviewId));
             toast.success('Review deleted successfully');
             return { success: true };

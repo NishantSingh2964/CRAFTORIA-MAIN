@@ -5,7 +5,6 @@ import { useProducts } from '../../contexts/ProductContext';
 import { useOccasions } from '../../contexts/OccasionContext';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
-import { getAuthToken } from '../../services/api';
 import { compressImage } from '../../utils/imageCompressor';
 
 const CATEGORIES = [
@@ -156,28 +155,26 @@ const EditProduct = () => {
     setLoading(true);
 
     try {
-      const token = await getAuthToken();
       const submissionData = new FormData();
       Object.keys(formData).forEach(key => submissionData.append(key, formData[key]));
       submissionData.append('occasions', JSON.stringify(selectedOccasions));
 
       // Build images_meta: for each slot, mark whether it's an existing URL, a new upload, or empty
       const images_meta = previews.map((p, idx) => {
-        if (files[idx]) return `NEW_FILE_${idx}`; // New upload — includes slot index
+        if (files[idx]) return `NEW_FILE_${idx}`; // New upload
         if (p && typeof p === 'string' && p.startsWith('http')) return p; // Existing Cloudinary URL
         return null; // Empty slot
       }).filter(x => x !== null);
 
       submissionData.append('images_meta', JSON.stringify(images_meta));
 
-      // Append each new file with a slot-indexed key so backend knows its position
+      // Append each new file with a slot-indexed key
       files.forEach((file, idx) => {
         if (file) submissionData.append(`image_${idx}`, file);
       });
 
       await api.patch(`/products/admin/${id}`, submissionData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });

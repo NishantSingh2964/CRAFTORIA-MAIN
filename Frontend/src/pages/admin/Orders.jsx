@@ -33,13 +33,15 @@ const getCustomerEmail = (order) => {
 
 const getPaymentLabel = (paymentStatus) => {
   if (paymentStatus === 'Paid') return 'Paid';
-  if (paymentStatus === 'Refunded') return 'Failed';
+  if (paymentStatus === 'Refunded') return 'Refunded';
+  if (paymentStatus === 'Cancelled') return 'Cancelled';
   return 'Pending';
 };
 
 const getPaymentClass = (paymentStatus) => {
   if (paymentStatus === 'Paid') return 'bg-emerald-100 text-emerald-700 before:bg-emerald-600';
-  if (paymentStatus === 'Refunded') return 'bg-red-100 text-red-700 before:bg-red-600';
+  if (paymentStatus === 'Refunded') return 'bg-purple-100 text-purple-700 before:bg-purple-600';
+  if (paymentStatus === 'Cancelled') return 'bg-gray-100 text-gray-700 before:bg-gray-600';
   return 'bg-orange-100 text-orange-700 before:bg-orange-500';
 };
 
@@ -48,6 +50,7 @@ const getStatusClass = (status) => {
   if (status === 'Processing') return 'bg-blue-50 border-blue-200 text-blue-700 focus:ring-blue-500';
   if (status === 'Shipped') return 'bg-indigo-50 border-indigo-200 text-indigo-700 focus:ring-indigo-500';
   if (status === 'Cancelled') return 'bg-red-50 border-red-200 text-red-700 focus:ring-red-500';
+  if (status === 'Cancellation Requested') return 'bg-amber-50 border-amber-200 text-amber-700 focus:ring-amber-500';
   return 'bg-amber-50 border-amber-200 text-amber-700 focus:ring-amber-500';
 };
 
@@ -106,6 +109,7 @@ const Orders = () => {
       const searchable = `${orderId} ${customer} ${email}`.toLowerCase();
       const matchesQuery = searchable.includes(query.toLowerCase());
       const matchesStatus = status === 'All Status' || order.status === status;
+      const paymentLabel = getPaymentLabel(order.paymentStatus);
       const matchesPayment = payment === 'All Payment Status' || payment === paymentLabel;
       
       // Date filtering
@@ -220,7 +224,7 @@ const Orders = () => {
               <option>All Payment Status</option>
               <option>Paid</option>
               <option>Pending</option>
-              <option>Failed</option>
+              <option>Refunded</option>
             </select>
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6c5c58]" />
           </label>

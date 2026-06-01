@@ -7,6 +7,7 @@ const StatCard = ({
   trend = 'up',
   trendValue,
   sparkline = '34,58 58,56 82,42 106,47 130,34 154,54 178,68 202,60 226,64 250,45 274,34 298,52 322,66 346,60 370,64 394,40',
+  color
 }) => {
   const isUp = trend === 'up';
   const gradientId = `spark-${title.replace(/\s+/g, '-')}`;
@@ -19,7 +20,7 @@ const StatCard = ({
         </div>
         <div className="min-w-0 pt-1">
           <p className="font-sans text-sm font-semibold text-[#5f3430]">{title}</p>
-          <h3 className="mt-2 font-serif text-2xl font-black leading-none text-[#161111] sm:text-[26px]">
+          <h3 className={`mt-2 font-serif text-2xl font-black leading-none sm:text-[26px] ${color || 'text-[#161111]'}`}>
             {value}
           </h3>
         </div>

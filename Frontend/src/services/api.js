@@ -7,21 +7,24 @@ const api = axios.create({
   },
 });
 
-// We will set up the interceptor in the Provider to have access to Clerk hooks
+// Interceptor to inject the Clerk JWT token
+api.interceptors.request.use(async (config) => {
+  try {
+    const token = await authTokenGetter();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch (error) {
+    console.error('API Interceptor Error:', error);
+  }
+  return config;
+});
+
+// This will be set in AuthProvider or a similar root component
 let authTokenGetter = () => Promise.resolve(null);
 
 export const setTokenGetter = (fn) => {
   authTokenGetter = fn;
-};
-
-export const getAuthToken = () => authTokenGetter();
-
-export const setAuthToken = (token) => {
-  if (token) {
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    delete api.defaults.headers.common['Authorization'];
-  }
 };
 
 export default api;

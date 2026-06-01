@@ -17,6 +17,10 @@ const expenseSchema = new mongoose.Schema({
         type: String,
         enum: ['Shipping', 'Marketing', 'Inventory', 'Others'],
         default: 'Others'
+    },
+    message: {
+        type: String,
+        trim: true
     }
 }, {
     timestamps: true

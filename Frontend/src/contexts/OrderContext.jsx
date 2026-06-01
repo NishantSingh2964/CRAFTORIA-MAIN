@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import api, { getAuthToken } from '../services/api';
+import api from '../services/api';
 
 const OrderContext = createContext();
 
 export const OrderProvider = ({ children }) => {
-    const getToken = getAuthToken;
     const [orders, setOrders] = useState([]);
     const [adminOrders, setAdminOrders] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -14,10 +13,7 @@ export const OrderProvider = ({ children }) => {
     const fetchMyOrders = async () => {
         try {
             setLoading(true);
-            const token = await getToken();
-            const response = await api.get('/orders/my-orders', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/orders/my-orders');
             setOrders(response.data.data);
             setError(null);
         } catch (err) {
@@ -31,10 +27,7 @@ export const OrderProvider = ({ children }) => {
     const fetchAllOrders = async () => {
         try {
             setLoading(true);
-            const token = await getToken();
-            const response = await api.get('/orders/admin', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/orders/admin');
             setAdminOrders(response.data.data);
             setError(null);
         } catch (err) {
@@ -47,10 +40,7 @@ export const OrderProvider = ({ children }) => {
     const updateOrderStatus = async (orderId, status) => {
         try {
             setLoading(true);
-            const token = await getToken();
-            const response = await api.patch(`/orders/admin/${orderId}`, { status }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.patch(`/orders/admin/${orderId}`, { status });
             setAdminOrders(prev => prev.map(o => o._id === orderId ? response.data.data : o));
             return { success: true };
         } catch (err) {
@@ -63,10 +53,7 @@ export const OrderProvider = ({ children }) => {
     const createOrder = async (orderData) => {
         try {
             setLoading(true);
-            const token = await getToken();
-            const response = await api.post('/orders', orderData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.post('/orders', orderData);
             setOrders(prev => [response.data.data, ...prev]);
             return { success: true, data: response.data.data };
         } catch (err) {
@@ -79,10 +66,7 @@ export const OrderProvider = ({ children }) => {
     const createStripeSession = async (items, deliveryInfo, customerEmail) => {
         try {
             setLoading(true);
-            const token = await getToken();
-            const response = await api.post('/orders/create-checkout-session', { items, deliveryInfo, customerEmail }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.post('/orders/create-checkout-session', { items, deliveryInfo, customerEmail });
             return { success: true, url: response.data.url, orderId: response.data.orderId };
         } catch (err) {
             return { success: false, error: err.response?.data?.message || 'Failed to start payment' };
@@ -96,14 +80,25 @@ export const OrderProvider = ({ children }) => {
 
     const deleteOrder = async (orderId) => {
         try {
-            const token = await getToken();
-            await api.delete(`/orders/admin/${orderId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/orders/admin/${orderId}`);
             setAdminOrders(prev => prev.filter(o => o._id !== orderId));
             return { success: true };
         } catch (err) {
             return { success: false, error: err.response?.data?.message || 'Failed to delete order' };
+        }
+    };
+
+    const cancelOrder = async (orderId) => {
+        try {
+            setLoading(true);
+            const response = await api.post(`/orders/${orderId}/cancel`);
+            // Refresh personal orders to reflect cancellation
+            await fetchMyOrders();
+            return { success: true, message: response.data.message };
+        } catch (err) {
+            return { success: false, error: err.response?.data?.message || 'Failed to cancel order' };
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -118,7 +113,8 @@ export const OrderProvider = ({ children }) => {
         createOrder,
         addOrder,
         createStripeSession,
-        deleteOrder
+        deleteOrder,
+        cancelOrder
     };
 
     return <OrderContext.Provider value={value}>{children}</OrderContext.Provider>;

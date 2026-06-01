@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
 import api from '../services/api';
-import { getAuthToken } from '../services/api';
 
 const ProductContext = createContext();
 
@@ -8,8 +7,6 @@ export const ProductProvider = ({ children }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-
-    const getToken = getAuthToken;
 
     const fetchProducts = async () => {
         try {
@@ -27,10 +24,8 @@ export const ProductProvider = ({ children }) => {
     const addProduct = async (formData) => {
         try {
             setLoading(true);
-            const token = await getToken();
             const response = await api.post('/products/admin', formData, {
                 headers: { 
-                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
                 }
             });
@@ -45,10 +40,7 @@ export const ProductProvider = ({ children }) => {
 
     const deleteProduct = async (id) => {
         try {
-            const token = await getToken();
-            await api.delete(`/products/admin/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/products/admin/${id}`);
             setProducts(prev => prev.filter(p => p._id !== id));
             return { success: true };
         } catch (err) {

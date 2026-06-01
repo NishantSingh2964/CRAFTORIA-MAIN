@@ -313,3 +313,147 @@ exports.retryPayment = async (req, res, next) => {
     }
 };
 
+// @desc    Cancel order request (User)
+// @route   POST /api/orders/:id/cancel
+// @access  Private
+exports.cancelOrder = async (req, res, next) => {
+    try {
+        const order = await Order.findById(req.params.id);
+
+        if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+        if (order.userId !== req.auth.userId) return res.status(403).json({ success: false, message: 'Not authorized' });
+
+        // Check if cancellable (Only if status is Processing)
+        if (order.status !== 'Processing') {
+            return res.status(400).json({ success: false, message: `Cannot cancel order in ${order.status} state` });
+        }
+
+        order.status = 'Cancellation Requested';
+        await order.save();
+
+        // Send Email to User
+        const { sendCancellationRequestedEmail } = require('../utils/emailService');
+        sendCancellationRequestedEmail(order)
+            .catch(err => console.error('Error sending cancellation requested email:', err.message));
+
+        // Notify Admin
+        await Notification.create({
+            message: `New Cancellation Request: ${order.orderNumber}`,
+            type: 'Order',
+            link: '/admin/cancellation-requests'
+        });
+
+        res.status(200).json({ success: true, message: 'Cancellation request sent to admin' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Approve cancellation (Admin)
+// @route   PATCH /api/admin/orders/:id/approve-cancel
+// @access  Private/Admin
+exports.approveCancellation = async (req, res, next) => {
+    try {
+        const NOMINAL_CHARGE = Number(process.env.CANCELLATION_FEE) || 50;
+        const order = await Order.findById(req.params.id);
+
+        if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+        if (order.status !== 'Cancellation Requested') {
+            return res.status(400).json({ success: false, message: 'Order is not in Cancellation Requested state' });
+        }
+
+        // If Paid, initiate refund
+        if (order.paymentStatus === 'Paid' && order.paymentIntentId) {
+            const refundAmount = Math.max(0, (order.totalAmount - NOMINAL_CHARGE) * 100);
+            if (refundAmount > 0) {
+                await stripe.refunds.create({
+                    payment_intent: order.paymentIntentId,
+                    amount: Math.round(refundAmount),
+                });
+                order.paymentStatus = 'Refunded';
+            } else {
+                order.paymentStatus = 'Cancelled';
+            }
+        } else {
+            order.paymentStatus = 'Cancelled';
+        }
+
+        order.status = 'Cancelled';
+        await order.save();
+
+        // Restore Inventory
+        for (const item of order.items) {
+            await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity } });
+        }
+
+        // Send Email to User (Approved/Finalized)
+        const { sendOrderCancellationEmail } = require('../utils/emailService');
+        sendOrderCancellationEmail(order, NOMINAL_CHARGE)
+            .catch(err => console.error('Error sending cancellation email:', err.message));
+
+        res.status(200).json({ success: true, message: 'Cancellation approved and refund initiated' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Reject cancellation (Admin)
+// @route   PATCH /api/admin/orders/:id/reject-cancel
+// @access  Private/Admin
+exports.rejectCancellation = async (req, res, next) => {
+    try {
+        const order = await Order.findById(req.params.id);
+
+        if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+        if (order.status !== 'Cancellation Requested') {
+            return res.status(400).json({ success: false, message: 'Order is not in Cancellation Requested state' });
+        }
+
+        order.status = 'Processing'; // Reset to processing
+        await order.save();
+
+        // Send Email to User (Rejected)
+        const { sendCancellationWithdrawnEmail } = require('../utils/emailService');
+        sendCancellationWithdrawnEmail(order) // Using Withdrawal template as it has same message (Back to processing)
+            .catch(err => console.error('Error sending cancellation rejection email:', err.message));
+        
+        res.status(200).json({ success: true, message: 'Cancellation request rejected' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Withdraw cancellation request (User)
+// @route   POST /api/orders/:id/withdraw-cancel
+// @access  Private
+exports.withdrawCancellationRequest = async (req, res, next) => {
+    try {
+        const order = await Order.findById(req.params.id);
+
+        if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+        if (order.userId !== req.auth.userId) return res.status(403).json({ success: false, message: 'Not authorized' });
+
+        if (order.status !== 'Cancellation Requested') {
+            return res.status(400).json({ success: false, message: 'Order is not in Cancellation Requested state' });
+        }
+
+        order.status = 'Processing';
+        await order.save();
+
+        // Send Email to User
+        const { sendCancellationWithdrawnEmail } = require('../utils/emailService');
+        sendCancellationWithdrawnEmail(order)
+            .catch(err => console.error('Error sending cancellation withdrawn email:', err.message));
+
+        // Notify Admin that request was withdrawn
+        await Notification.create({
+            message: `Cancellation Request Withdrawn: ${order.orderNumber}`,
+            type: 'Order',
+            link: '/admin/orders'
+        });
+
+        res.status(200).json({ success: true, message: 'Cancellation request withdrawn' });
+    } catch (error) {
+        next(error);
+    }
+};

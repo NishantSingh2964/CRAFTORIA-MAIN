@@ -109,8 +109,8 @@ exports.getDashboardStats = async (req, res, next) => {
         // 7. Recent Orders
         const recentOrders = await Order.find().sort('-createdAt').limit(5);
 
-        // 8. Low Stock
-        const lowStockProducts = await Product.find({ stock: { $lte: 5 } }).select('name stock');
+        // 8. Low Stock (Top 5 lowest)
+        const lowStockProducts = await Product.find().sort({ stock: 1 }).limit(5).select('name stock category image');
 
         res.status(200).json({
             success: true,

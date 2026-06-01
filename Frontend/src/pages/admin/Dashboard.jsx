@@ -3,13 +3,16 @@ import {
   Check,
   Clock3,
   Eye,
+  DollarSign,
   Package,
   ShoppingBag,
   ShoppingCart,
   Truck,
   Users,
   X,
+  AlertTriangle,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import StatCard from '../../components/admin/StatCard';
 import { useAdmin } from '../../contexts/AdminContext';
 import OrderDetailsModal from '../../components/admin/OrderDetailsModal';
@@ -213,66 +216,106 @@ const Dashboard = () => {
         </section>
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-[#eadbd6] bg-white shadow-[0_14px_34px_rgba(80,24,18,0.05)]">
-        <div className="flex items-center justify-between border-b border-[#f1e5e1] px-6 py-5">
-          <div>
-            <h2 className="font-serif text-lg font-bold text-[#171111]">Top Categories</h2>
-            <p className="mt-1 text-xs font-medium text-[#8b7772]">Revenue by gifting segment</p>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.6fr_0.8fr]">
+        <section className="overflow-hidden rounded-2xl border border-[#eadbd6] bg-white shadow-[0_14px_34px_rgba(80,24,18,0.05)]">
+          <div className="flex items-center justify-between border-b border-[#f1e5e1] px-6 py-5">
+            <div>
+              <h2 className="font-serif text-lg font-bold text-[#171111]">Top Categories</h2>
+              <p className="mt-1 text-xs font-medium text-[#8b7772]">Revenue by gifting segment</p>
+            </div>
           </div>
-        </div>
-        <div className="p-6">
-          <div className="grid items-center gap-12 lg:grid-cols-[280px_1fr]">
-            <div className="relative mx-auto h-[240px] w-[240px]">
-              <div className="absolute inset-3 rounded-full bg-[#fff7f3]" />
-              <svg className="relative h-full w-full -rotate-90 drop-shadow-md" viewBox="0 0 42 42" aria-hidden="true">
-                <circle cx="21" cy="21" r="15.915" fill="none" stroke="#f6e8e4" strokeWidth="8" />
-                {categoryData.map((item) => (
-                  <circle
-                    key={item.label}
-                    cx="21"
-                    cy="21"
-                    r="15.915"
-                    fill="none"
-                    stroke={item.color}
-                    strokeWidth="8"
-                    strokeDasharray={item.dash}
-                    strokeDashoffset={item.offset}
-                    strokeLinecap="round"
-                  />
-                ))}
-              </svg>
-              <div className="absolute inset-0 grid place-items-center text-center">
-                <div className="grid h-[120px] w-[120px] place-items-center rounded-full bg-white shadow-xl">
+          <div className="p-6">
+            <div className="flex flex-col items-center gap-8 lg:flex-row lg:justify-between">
+              <div className="relative h-[200px] w-[200px] shrink-0">
+                <div className="absolute inset-2 rounded-full bg-[#fff7f3]" />
+                <svg className="relative h-full w-full -rotate-90 drop-shadow-md" viewBox="0 0 42 42" aria-hidden="true">
+                  <circle cx="21" cy="21" r="15.915" fill="none" stroke="#f6e8e4" strokeWidth="8" />
+                  {categoryData.map((item) => (
+                    <circle
+                      key={item.label}
+                      cx="21"
+                      cy="21"
+                      r="15.915"
+                      fill="none"
+                      stroke={item.color}
+                      strokeWidth="8"
+                      strokeDasharray={item.dash}
+                      strokeDashoffset={item.offset}
+                      strokeLinecap="round"
+                    />
+                  ))}
+                </svg>
+                <div className="absolute inset-0 grid place-items-center text-center">
                   <div>
-                    <p className="font-serif text-xl font-black leading-none text-[#171111]">{formatCurrency(revenue).replace('.00', '')}</p>
-                    <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[#8b7772]">Total Rev</p>
+                    <p className="font-serif text-lg font-black leading-none text-[#171111]">{formatCurrency(revenue).replace('.00', '')}</p>
+                    <p className="mt-1 text-[8px] font-black uppercase tracking-widest text-[#8b7772]">Total Rev</p>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {categoryData.length > 0 ? categoryData.map((item) => (
-                <div key={item.label} className="group rounded-xl border border-[#f0e3df] bg-[#fffaf8] p-4 transition-all hover:border-[#a20d0d] hover:bg-white hover:shadow-lg">
-                  <div className="mb-3 flex items-center gap-3">
-                    <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
-                    <p className="min-w-0 flex-1 truncate text-xs font-black uppercase tracking-wider text-[#2b1d1a]">{item.label}</p>
+              <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                {categoryData.length > 0 ? categoryData.slice(0, 4).map((item) => (
+                  <div key={item.label} className="group rounded-xl border border-[#f0e3df] bg-[#fffaf8] p-3 transition-all hover:border-[#a20d0d] hover:bg-white">
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                      <p className="min-w-0 flex-1 truncate text-[10px] font-black uppercase tracking-wider text-[#2b1d1a]">{item.label}</p>
+                    </div>
+                    <div className="flex items-end justify-between">
+                      <p className="text-sm font-black text-[#171111]">{formatCurrency(item.value).replace('.00', '')}</p>
+                      <span className="text-xs font-black text-[#8b7772]">{item.percent}%</span>
+                    </div>
                   </div>
-                  <div className="flex items-end justify-between">
-                    <p className="text-lg font-black text-[#171111]">{formatCurrency(item.value).replace('.00', '')}</p>
-                    <span className="text-sm font-black text-[#8b7772]">{item.percent}%</span>
-                  </div>
-                  <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[#f0e3df]">
-                    <div className="h-full transition-all duration-700" style={{ width: `${item.percent}%`, backgroundColor: item.color }} />
-                  </div>
-                </div>
-              )) : (
-                <div className="col-span-full py-10 text-center font-serif text-[#8b7772]">No category data yet.</div>
-              )}
+                )) : (
+                  <div className="col-span-full py-6 text-center font-serif text-[#8b7772]">No category data yet.</div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        <section className="rounded-2xl border border-[#eadbd6] bg-white p-6 shadow-[0_14px_34px_rgba(80,24,18,0.05)]">
+            <div className="mb-6">
+                <h2 className="font-serif text-lg font-bold text-[#171111]">Low Inventory</h2>
+                <p className="mt-1 text-xs font-medium text-[#8b7772]">Stock alerts for top items</p>
+            </div>
+            <div className="space-y-4">
+                {stats?.lowStockProducts?.length > 0 ? stats.lowStockProducts.map((p) => (
+                    <div key={p._id} className="group flex items-center gap-4 rounded-xl border border-transparent p-1 transition hover:bg-[#fff9f6] hover:border-[#f1e5e1]">
+                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
+                            {p.image ? (
+                                <img src={p.image} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                                <div className="grid h-full w-full place-items-center text-xs font-black text-gray-300">PFG</div>
+                            )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="truncate text-[13px] font-bold text-[#2b1d1a] group-hover:text-[#a20d0d]">{p.name}</p>
+                            <p className="text-[10px] font-semibold text-[#8b7772]">{p.category}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-xs font-black ${p.stock === 0 ? 'text-[#8d0000]' : 'text-gray-900'}`}>
+                            {p.stock} <span className="text-[10px] uppercase text-gray-400">Left</span>
+                          </p>
+                          <div className="mt-1 h-1 w-16 overflow-hidden rounded-full bg-gray-100">
+                             <div 
+                               className={`h-full transition-all duration-1000 ${p.stock === 0 ? 'bg-red-600' : p.stock < 5 ? 'bg-orange-500' : 'bg-emerald-500'}`} 
+                               style={{ width: `${Math.min(100, (p.stock / 20) * 100)}%` }}
+                             />
+                          </div>
+                        </div>
+                    </div>
+                )) : (
+                    <div className="py-20 text-center font-serif text-[#8b7772]">Inventory levels are healthy.</div>
+                )}
+            </div>
+            <Link 
+                to="/admin/products"
+                className="mt-6 flex w-full items-center justify-center rounded-xl border border-[#eadbd6] py-2.5 text-[10px] font-black uppercase tracking-widest text-[#8d0000] transition hover:bg-[#8d0000] hover:text-white"
+            >
+                View Full Inventory
+            </Link>
+        </section>
+      </div>
 
       <section className="rounded-2xl border border-[#eadbd6] bg-white p-6 shadow-[0_14px_34px_rgba(80,24,18,0.05)]">
         <div className="mb-6 flex items-center justify-between">
