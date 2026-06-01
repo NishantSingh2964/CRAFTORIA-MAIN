@@ -67,7 +67,7 @@ const Chatbot = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 w-auto sm:w-[400px] h-[calc(100vh-80px)] sm:h-[600px] bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden border border-gray-100 animate-in fade-in slide-in-from-bottom-10 duration-300">
+        <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 w-auto sm:w-[400px] h-[calc(100vh-140px)] sm:h-[600px] bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden border border-gray-100 animate-in fade-in slide-in-from-bottom-10 duration-300">
           
           {/* Header with Close Button */}
           <div className="bg-[#760000] p-4 text-white">
