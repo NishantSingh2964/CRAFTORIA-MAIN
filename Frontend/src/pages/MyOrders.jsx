@@ -6,6 +6,7 @@ import { useOrders } from '../contexts/OrderContext';
 import { formatPrice } from '../utils/formatPrice';
 import api from '../services/api';
 import hero2 from '../assets/home/hero2.png?w=1400&format=webp&quality=82';
+import UserOrderDetailsModal from '../components/UserOrderDetailsModal';
 
 const Icon = ({ children, className = 'w-4 h-4' }) => (
   <svg
@@ -100,6 +101,8 @@ const MyOrders = () => {
   const [retryingId, setRetryingId] = useState(null);
   const [cancellingId, setCancellingId] = useState(null);
   const [withdrawingId, setWithdrawingId] = useState(null);
+
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   const handleCancelOrder = async (orderId) => {
     if (!window.confirm('Are you sure you want to cancel this order? ₹50 will be deducted as a cancellation fee if already paid.')) return;
@@ -393,6 +396,7 @@ const MyOrders = () => {
                               <div className="flex flex-wrap gap-x-4 gap-y-2">
                                 <button
                                   type="button"
+                                  onClick={() => setSelectedOrder(order)}
                                   className="inline-flex items-center gap-1.5 font-sans text-xs text-gray-600 transition hover:text-[#760000]"
                                 >
                                   <Icon className="w-3.5 h-3.5">
@@ -534,6 +538,12 @@ const MyOrders = () => {
           ))}
         </div>
       </section>
+      {selectedOrder && (
+        <UserOrderDetailsModal 
+          order={selectedOrder} 
+          onClose={() => setSelectedOrder(null)} 
+        />
+      )}
     </div>
   );
 };

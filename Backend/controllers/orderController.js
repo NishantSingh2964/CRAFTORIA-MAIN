@@ -155,12 +155,37 @@ exports.getOrders = async (req, res, next) => {
 // @access  Private/Admin
 exports.updateOrderStatus = async (req, res, next) => {
     try {
-        const order = await Order.findByIdAndUpdate(req.params.id, { status: req.body.status }, {
-            new: true,
-            runValidators: true
-        });
+        const { status } = req.body;
+        const order = await Order.findById(req.params.id);
 
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+        // Special handling for cancellation by admin
+        if (status === 'Cancelled' && order.status !== 'Cancelled') {
+            // 1. Handle Refund (Full Amount for admin cancellation)
+            if (order.paymentStatus === 'Paid' && order.paymentIntentId) {
+                await stripe.refunds.create({
+                    payment_intent: order.paymentIntentId,
+                    // No amount specified means full refund
+                });
+                order.paymentStatus = 'Refunded';
+            } else if (order.paymentStatus === 'Unpaid' || order.paymentStatus === 'Payment Pending') {
+                order.paymentStatus = 'Cancelled';
+            }
+
+            // 2. Restore Inventory
+            for (const item of order.items) {
+                await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity } });
+            }
+
+            // 3. Send Email (Full Refund)
+            const { sendOrderCancellationEmail } = require('../utils/emailService');
+            sendOrderCancellationEmail(order, 0) // 0 fee for admin cancellation
+                .catch(err => console.error('Error sending admin cancellation email:', err.message));
+        }
+
+        order.status = status;
+        await order.save();
 
         res.status(200).json({ success: true, data: order });
     } catch (error) {
