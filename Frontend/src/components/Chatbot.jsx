@@ -129,7 +129,7 @@ const Chatbot = () => {
           {/* Quick Questions */}
           {!isLoading && messages.length < 3 && (
             <div className="px-4 py-2 flex flex-wrap gap-2 bg-gray-50/50">
-              {['Delivery status', 'How to customize?', 'Contact support'].map((q) => (
+              {['Gift for partner', 'Anniversary gifts', 'How to order?'].map((q) => (
                 <button
                   key={q}
                   onClick={() => { setInput(q); }}
