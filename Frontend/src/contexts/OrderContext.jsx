@@ -39,14 +39,11 @@ export const OrderProvider = ({ children }) => {
 
     const updateOrderStatus = async (orderId, status) => {
         try {
-            setLoading(true);
             const response = await api.patch(`/orders/admin/${orderId}`, { status });
             setAdminOrders(prev => prev.map(o => o._id === orderId ? response.data.data : o));
             return { success: true };
         } catch (err) {
             return { success: false, error: err.response?.data?.message || 'Failed to update status' };
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -90,15 +87,12 @@ export const OrderProvider = ({ children }) => {
 
     const cancelOrder = async (orderId) => {
         try {
-            setLoading(true);
             const response = await api.post(`/orders/${orderId}/cancel`);
             // Refresh personal orders to reflect cancellation
             await fetchMyOrders();
             return { success: true, message: response.data.message };
         } catch (err) {
             return { success: false, error: err.response?.data?.message || 'Failed to cancel order' };
-        } finally {
-            setLoading(false);
         }
     };
 

@@ -282,9 +282,14 @@ const Orders = () => {
               </tr>
             </thead>
             <tbody>
-              {loading ? (
+              {loading && paginatedOrders.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="px-8 py-20 text-center font-serif text-xl text-[#8b7772]">Loading orders...</td>
+                  <td colSpan="8" className="px-8 py-20 text-center font-serif text-xl text-[#8b7772]">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-100 border-t-[#8d0000]" />
+                      Loading orders...
+                    </div>
+                  </td>
                 </tr>
               ) : paginatedOrders.length === 0 ? (
                 <tr>
