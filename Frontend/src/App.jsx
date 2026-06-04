@@ -30,6 +30,7 @@ const Checkout = lazy(() => import('./pages/Checkout'));
 const Success = lazy(() => import('./pages/Success'));
 const MyOrders = lazy(() => import('./pages/MyOrders'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
+const StoryDetail = lazy(() => import('./pages/StoryDetail'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Admin Pages
@@ -76,6 +77,7 @@ const App = () => {
                             <Route path="collections" element={<Collections />} />
                             <Route path="gifts-by-occasion" element={<GiftsByOccasion />} />
                             <Route path="personalized" element={<Personalized />} />
+                            <Route path="story/:id" element={<StoryDetail />} />
                             <Route path="our-story" element={<OurStory />} />
                             <Route path="product/:id" element={<ProductDetail />} />
                             <Route path="cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />

@@ -467,3 +467,138 @@ export const occasionsList = [
     tag: "Pure Innocence"
   }
 ];
+
+export const stories = [
+  {
+    id: 'leather-journal-story',
+    name: 'The Traveler\'s Legacy',
+    tag: 'Reader Story',
+    image: 'https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=600&auto=format&fit=crop',
+    description: 'How a monogrammed leather journal became a bridge between a father and daughter across oceans.',
+    sections: [
+      {
+        title: "A Departure to Remember",
+        paragraphs: [
+          "When Sarah moved to London for her PhD, her father gave her a Monogrammed Leather Journal from CRAFTORIA. He had it embossed with her late grandfather's initials, 'J.R.S.', in a timeless serif font. It wasn't just a notebook; it was a heavy, tan-colored artifact of genuine full-grain leather that smelled of oak and old libraries.",
+          "What started as a simple diary in a rainy studio apartment in South Kensington quickly evolved into something far more profound. Sarah began to treat the pages with a certain reverence. She didn't just write; she documented. She sketched the intricate gargoyles of Westminster Abbey, pressed wildflowers from her weekend trips to the Cotswolds between the thick ivory pages, and recorded the quiet observations of a young woman coming into her own in a foreign land."
+        ]
+      },
+      {
+        title: "The Silent Companion",
+        paragraphs: [
+          "The journal became a silent companion during the lonely nights of her first winter. 'I would sit in a small cafe called The Muffin Man, and as the steam rose from my tea, I would unpack my day onto those pages,' she recalls. 'The resistance of the paper against my fountain pen felt grounding. It made my transient life feel permanent.'",
+          "There were days when the academic pressure felt insurmountable, and the grey London sky seemed to weigh down on her. In those moments, she would turn to the first page, where her father had written a small note: 'Your story is just beginning. Write it well.' That single sentence, preserved in ink on premium paper, gave her the strength to continue."
+        ]
+      },
+      {
+        title: "A Return to Home",
+        paragraphs: [
+          "On her first trip back home to Mumbai, nearly a year later, she sat with her father in their sun-drenched balcony. She placed the journal on his lap. As he ran his weathered fingers over the embossed initials of his own father, his eyes misted over. They spent hours going through it—the sketches, the pressed petals, and the recorded fears and triumphs of a daughter he had missed dearly.",
+          "'It's not just a book, Sarah,' he said, his voice thick with emotion. 'It's the first volume of your legacy. You've carried our family name to places your grandfather only ever dreamed of.' Today, that journal is nearly full, its leather softened by time and touch, serving as a living bridge across oceans and generations."
+        ]
+      }
+    ],
+    relatedProductId: 2,
+    quote: "A journal is a mirror to the soul, and CRAFTORIA made mine look beautiful.",
+    author: "Sarah J., London"
+  },
+  {
+    id: 'brass-compass-story',
+    name: 'Finding North Together',
+    tag: 'Anniversary Special',
+    image: 'https://images.unsplash.com/photo-1548345680-f5475ea5df84?q=80&w=600&auto=format&fit=crop',
+    description: 'An engraved brass compass that guided a couple through their first year of marriage.',
+    sections: [
+      {
+        title: "The Restless Spirits",
+        paragraphs: [
+          "Vikram and Ananya were always explorers, their relationship forged in the high peaks of the Himalayas and the quiet backwaters of Kerala. For their first anniversary, Ananya wanted something that captured the essence of their restless spirits and their steady commitment. She chose the Engraved Brass Horizon Compass from CRAFTORIA.",
+          "The compass was a heavy, solid piece of maritime engineering. Its polished lid hid a secret—a custom engraving that Ananya had labored over for weeks. 'So you always find your way back to me,' it read, etched in a graceful script that contrasted with the rugged metal."
+        ]
+      },
+      {
+        title: "Alone in the Atlantic",
+        paragraphs: [
+          "Months into their marriage, Vikram accepted a high-stakes maritime engineering project that required him to be at sea for weeks at a time. The transition was difficult. In the middle of the Atlantic, with the vast, dark horizon stretching endlessly in every direction, the loneliness could be overwhelming.",
+          "'In those moments, when the satellite internet is spotty and the GPS is just a cold, blue screen, I reach into my cabin drawer for that compass,' Vikram says. 'The brass feels warm from the cabin's heat, and the weight of it in my palm is incredibly comforting. It’s a physical manifestation of home. I look at the needle dancing, and then I read Ananya's words inside the lid. It centers me.'"
+        ]
+      },
+      {
+        title: "The Talisman of Home",
+        paragraphs: [
+          "When he finally returns home, the compass is the first thing he puts on their bedside table. It has developed a slight patina from the salt air, a record of the journey it has shared with him. For Ananya and Vikram, it isn't just a navigational tool; it's a talisman that ensures they are never truly lost, as long as they have each other.",
+          "Every time they plan a new adventure, they consult the compass first. It has become a ritual—a way to honor the past while looking toward the future. It reminded them that while the world is vast and full of wonders, the most important journey is the one they take together."
+        ]
+      }
+    ],
+    relatedProductId: 7,
+    quote: "Gifts should speak louder than words. This one screamed love.",
+    author: "Ananya M., Mumbai"
+  },
+  {
+    id: 'name-necklace-story',
+    name: 'A Name to Remember',
+    tag: 'Self Love',
+    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=600&auto=format&fit=crop',
+    description: 'A custom script name necklace that helped a young woman reclaim her identity.',
+    sections: [
+      {
+        title: "The Search for Self",
+        paragraphs: [
+          "After a difficult year of major life transitions—a career change, a cross-country move, and the end of a long-term relationship—Maya felt like she had lost her sense of self. She had spent so many years being someone's partner, someone's employee, and someone's daughter that she had forgotten who Maya actually was.",
+          "To mark the beginning of her new chapter in Bangalore, she decided to treat herself to something that was purely HER. She ordered the Custom Script Name Necklace in 18k Gold from CRAFTORIA."
+        ]
+      },
+      {
+        title: "A Piece of Art",
+        paragraphs: [
+          "'I remember opening the box and seeing my name in that beautiful, flowing script,' Maya explains. 'It was the first time in a long time I had seen my name not as part of a signature on a document or a label on a mailbox, but as a piece of art. It felt like a reclamation.'",
+          "The hand-shaped script was delicate yet strong, just like Maya herself. She began wearing it every single day. It became a ritual—fastening the clasp in the morning was a commitment to being true to herself that day. It was no longer just jewelry; it was a daily affirmation."
+        ]
+      },
+      {
+        title: "The Armor of Confidence",
+        paragraphs: [
+          "'It's my armor,' she says. 'In boardrooms where I'm the only woman, or at social events where I'm still finding my footing, I find myself habitually touching the 'M' of the necklace. It's a tactile reminder of my journey. When I look in the mirror now, I don't see a woman defined by her circumstances.'",
+          "One year later, Maya has built a life she loves. The necklace has slightly dulled in its shine but has gained a glow of confidence that only comes from self-love. 'CRAFTORIA didn't just sell me jewelry; they sold me a way to remember who I am.'"
+        ]
+      }
+    ],
+    relatedProductId: 9,
+    quote: "CRAFTORIA didn't just sell me jewelry; they sold me confidence.",
+    author: "Maya R., Bangalore"
+  },
+  {
+    id: 'walnut-amplifier-story',
+    name: 'Echoes of the Past',
+    tag: 'Retirement Gift',
+    image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=600&auto=format&fit=crop',
+    description: 'Why a walnut wood amplifier was the perfect retirement gift for a legendary music teacher.',
+    sections: [
+      {
+        title: "The Legend of the Hall",
+        paragraphs: [
+          "Mr. Henderson taught classical music at the city’s oldest conservatory for over 40 years. Generations of musicians had passed through his doors, all of them inspired by his unwavering devotion to 'the organic soul of sound.' When the time came for his retirement, his former students wanted to give him something that resonated with his philosophy.",
+          "They chose the Walnut Wood Sound Amplifier from CRAFTORIA. 'We knew he despised the cold, synthetic quality of modern Bluetooth speakers,' says one of his former pupils. 'He always taught us that wood is the secret to warmth. It’s what gives a Stradivarius its voice.'"
+        ]
+      },
+      {
+        title: "The Silence Between the Notes",
+        paragraphs: [
+          "The students had a favorite quote by Mozart engraved into the rich, dark grain of the base: 'The music is not in the notes, but in the silence between.' This wasn't just a gift; it was a message of respect for a man who understood the profound power of resonance.",
+          "The amplifier worked on pure physics, no complex circuits or batteries required. Just a precisely carved acoustic chamber inside a solid block of walnut wood. It was a marvel of minimalist design that mirrored Mr. Henderson's own disciplined approach to music."
+        ]
+      },
+      {
+        title: "A Garden of Sound",
+        paragraphs: [
+          "Today, if you visit Mr. Henderson's quiet garden in the northern suburbs, you'll find him sitting on his porch. His phone rests in the custom walnut dock. The natural resonance of the hollowed-out premium walnut wood amplifies the sound with a rich, acoustic quality that digital devices simply cannot replicate.",
+          "'It captures the overtones perfectly,' Mr. Henderson says, with a satisfied smile. 'It doesn't just make the music louder; it makes it richer. It sounds like the halls of my old conservatory—pure, organic, and full of life. It’s the perfect companion for a man who spent his life chasing the truth in every chord.'"
+        ]
+      }
+    ],
+    relatedProductId: 8,
+    quote: "Sometimes, the simplest things resonate the loudest.",
+    author: "Class of 2024"
+  }
+];

@@ -21,10 +21,10 @@ import ArtisanalRevealModal from '../components/Personalized/ArtisanalRevealModa
 // Data
 import { 
   basketProducts,
-  personalizedProducts,
   categories,
   emptyContactForm 
 } from '../components/Personalized/data';
+import { stories } from '../assets.js';
 
 const Personalized = () => {
   const [contactForm, setContactForm] = useState(emptyContactForm);
@@ -43,7 +43,7 @@ const Personalized = () => {
     fetchPersonalizedProducts();
   }, []);
 
-  const displayProducts = personalizedProducts;
+  const displayStories = stories;
 
   // Use live data for the Basket Builder (Choose Gifts) section
   const basketProductsList = livePersonalizedProducts.map(p => ({
@@ -196,7 +196,7 @@ const Personalized = () => {
            formatPrice={formatPrice}
            aiGeneratedImages={aiGeneratedImages}
         />
-        <CatalogSection products={displayProducts} />
+        <CatalogSection stories={displayStories} />
         <ExperienceForm 
            form={contactForm}
            updateField={(f, v) => setContactForm(p => ({...p, [f]: v}))}
