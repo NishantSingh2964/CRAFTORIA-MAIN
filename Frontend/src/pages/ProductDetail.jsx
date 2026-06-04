@@ -278,7 +278,6 @@ const ProductDetail = () => {
                 type="button"
                 onClick={() => {
                   toggleWishlist(product);
-                  toast.success(isInWishlist(product._id) ? 'Removed from wishlist' : 'Added to wishlist');
                 }}
                 className="absolute right-5 top-5 h-12 w-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-105 transition"
                 aria-label={isInWishlist(product._id) ? 'Remove from wishlist' : 'Add to wishlist'}
@@ -488,7 +487,6 @@ const ProductDetail = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       toggleWishlist(item);
-                      toast.success(isInWishlist(item._id) ? 'Removed from wishlist' : 'Added to wishlist');
                     }}
                     className="absolute right-3 top-3 h-9 w-9 rounded-full bg-white flex items-center justify-center shadow-md hover:scale-105 transition"
                     aria-label={isInWishlist(item._id) ? 'Remove from wishlist' : 'Add to wishlist'}

@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { ArrowRight, CheckCircle2, Gift, Heart, Pencil, Share2, Trash2, Truck, Image as ImageIcon } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
+import { useAuth } from '@clerk/clerk-react';
 import { formatPrice } from '../utils/formatPrice';
 import wishlistHero from '../assets/home/Wishlist.png';
 import touchImage from '../assets/home/Touch.png';
@@ -37,9 +38,10 @@ const normalizeProduct = (product) => ({
 });
 
 const Wishlist = () => {
-  const { wishlist, removeFromWishlist } = useWishlist();
+  const { wishlist, removeFromWishlist, loading } = useWishlist();
   const { addToCart } = useCart();
   const [sortBy, setSortBy] = useState('recent');
+  const { isLoaded, isSignedIn } = useAuth(); // Assuming useAuth is imported
 
   const sortedWishlist = useMemo(() => {
     const items = [...wishlist];
@@ -59,6 +61,14 @@ const Wishlist = () => {
     addToCart(normalizeProduct(product));
     toast.success('Added to cart');
   };
+
+  if (!isLoaded || (loading && wishlist.length === 0)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center pt-20">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#760000] border-t-transparent"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white pb-0 text-gray-950">
@@ -118,7 +128,24 @@ const Wishlist = () => {
       </section>
 
       <section className="site-container py-8 sm:py-10">
-        {wishlist.length === 0 ? (
+        {!isSignedIn ? (
+          <div className="flex min-h-[360px] flex-col items-center justify-center rounded-xl border border-red-100 bg-[#fff9f8] p-8 text-center shadow-sm sm:p-14">
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#760000] shadow-sm">
+              <Heart className="h-8 w-8" />
+            </div>
+            <h2 className="font-serif text-3xl font-bold tracking-tight text-gray-950">Login Required</h2>
+            <p className="body-copy-sm mt-3 max-w-md">
+              Please login to view and manage your curated wishlist.
+            </p>
+            <Link
+              to="/checkout" // Borrowing the checkout route logic or just using a link to trigger login
+              className="mt-8 inline-flex items-center gap-2 rounded-md border-2 border-[#760000] bg-[#760000] px-8 py-3.5 action-link text-white transition hover:bg-red-800"
+            >
+              Login to CRAFTORIA
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        ) : wishlist.length === 0 ? (
           <div className="flex min-h-[360px] flex-col items-center justify-center rounded-xl border border-red-100 bg-[#fff9f8] p-8 text-center shadow-sm sm:p-14">
             <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#760000] shadow-sm">
               <Heart className="h-8 w-8" />
