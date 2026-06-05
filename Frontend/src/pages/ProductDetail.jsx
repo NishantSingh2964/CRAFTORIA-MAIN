@@ -55,18 +55,23 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const { fetchProductById, fetchProducts, products } = useProducts();
   const { fetchPersonalizedProductById } = usePersonalized();
-  const { addToCart } = useCart();
+  const { addToCart, cartItems } = useCart();
   const { reviews, fetchReviewsByProduct, submitReview, deleteReview, loading: reviewsLoading } = useReviews();
   const { user, isSignedIn } = useUser();
   const { toggleWishlist, isInWishlist } = useWishlist();
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeImage, setActiveImage] = useState(null);
   const [gallery, setGallery] = useState([]);
-
-  // Personalization State
   const [isPersonalizing, setIsPersonalizing] = useState(false);
+
+  const isInCart = useMemo(() => {
+    if (!product) return false;
+    // Check both _id and id to be safe
+    return cartItems.some(item => (item._id || item.id) === (product._id || product.id));
+  }, [cartItems, product]);
 
   // Review Form State
   const [rating, setRating] = useState(5);
@@ -389,9 +394,20 @@ const ProductDetail = () => {
                     addToCart(product, quantity);
                   }
                 }}
-                className="w-full h-14 rounded-md bg-[#760000] text-white action-link shadow-[0_12px_26px_rgba(118,0,0,0.22)] hover:bg-[#760000] transition"
+                className={`w-full h-14 rounded-md transition duration-300 font-sans font-bold text-xs uppercase tracking-[0.1em] flex items-center justify-center gap-2 ${
+                  isInCart 
+                    ? "bg-[#fff5f5] text-[#760000] border border-[#760000]/30 shadow-sm" 
+                    : "bg-[#760000] text-white shadow-[0_12px_26px_rgba(118,0,0,0.22)] hover:bg-[#8d0000] hover:shadow-[0_15px_30px_rgba(118,0,0,0.28)]"
+                }`}
               >
-                Add To Cart
+                {isInCart ? (
+                  <>
+                    <CheckCircle2 className="h-5 w-5" />
+                    Item in Cart
+                  </>
+                ) : (
+                  "Add To Cart"
+                )}
               </button>
               <button
                 type="button"

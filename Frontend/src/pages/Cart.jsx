@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
+import { CheckCircle2 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useProducts } from '../contexts/ProductContext';
 import hero2 from '../assets/home/hero2.png?w=1400&format=webp&quality=82';
@@ -370,15 +371,29 @@ const Cart = () => {
                   </span>
                 </div>
               </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  addToCart(item);
-                }}
-                className="w-full rounded-md border border-[#760000] py-2.5 sm:py-3 text-center action-link text-[10px] sm:text-[11px] text-[#760000] hover:bg-[#760000] hover:text-white transition bg-white"
-              >
-                Add To Cart
-              </button>
+              {(() => {
+                const isInCart = cartItems.some(cItem => (cItem._id || cItem.id) === (item._id || item.id));
+                return (
+                  <button
+                    type="button"
+                    onClick={() => addToCart(item)}
+                    className={`w-full rounded-md py-2.5 sm:py-3 text-center font-sans font-bold text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                      isInCart
+                        ? "bg-[#fff5f5] text-[#760000] border border-[#760000]/30"
+                        : "bg-white border border-[#760000] text-[#760000] hover:bg-[#760000] hover:text-white"
+                    }`}
+                  >
+                    {isInCart ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4" />
+                        In Cart
+                      </>
+                    ) : (
+                      "Add To Cart"
+                    )}
+                  </button>
+                );
+              })()}
             </div>
           ))}
         </div>
