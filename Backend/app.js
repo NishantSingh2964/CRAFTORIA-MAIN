@@ -67,6 +67,7 @@ app.use('/api/personalized-products', require('./routes/personalizedProductRoute
 app.use('/api/chatbot', require('./routes/chatbotRoutes'));
 app.use('/api/expenses', require('./routes/expenseRoutes'));
 app.use('/api/wishlist', require('./routes/wishlistRoutes'));
+app.use('/api/cart', require('./routes/cartRoutes'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

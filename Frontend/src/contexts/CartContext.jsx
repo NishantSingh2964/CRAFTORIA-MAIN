@@ -1,86 +1,181 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import { useAuth } from '@clerk/clerk-react';
+import toast from 'react-hot-toast';
+import api from '../services/api';
+import { useClerkMount } from '../providers/LazyClerk';
 
 const CartContext = createContext();
-export { CartContext };
 
-const EMPTY_CART = {
-  cartItems: [],
-  cart: [],
-  addToCart: () => {},
-  removeFromCart: () => {},
-  clearCart: () => {},
-  updateQuantity: () => {},
-};
+const CartManager = ({ children }) => {
+  const { isSignedIn, isLoaded } = useAuth();
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-export const useCart = () => useContext(CartContext) ?? EMPTY_CART;
+  // Helper to get ID consistently
+  const getCartItemId = (item) => item?._id || item?.id;
 
-
-const getCartItemId = (item) => item?.id || item?._id || item?.sku || item?.name;
-
-// Load initial cart from localStorage synchronously (lazy initializer)
-const loadCart = () => {
-  try {
-    const stored = localStorage.getItem('cart');
-    return stored ? JSON.parse(stored) : [];
-  } catch (e) {
-    console.error('Failed to parse cart from localStorage', e);
-    return [];
-  }
-};
-
-export const CartProvider = ({ children }) => {
-  // Use lazy initializer so the initial state is read from localStorage
-  // before any render — avoids the race where the sync effect fires with []
-  const [cartItems, setCartItems] = useState(loadCart);
-
-  // Persist to localStorage whenever cartItems changes
+  // Sync with backend on login
   useEffect(() => {
-    try {
-      localStorage.setItem('cart', JSON.stringify(cartItems));
-    } catch (e) {
-      console.error('Failed to save cart to localStorage', e);
+    const fetchCart = async () => {
+      if (!isLoaded || !isSignedIn) {
+        setCartItems([]);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const response = await api.get('/cart');
+        if (response.data.success) {
+          // The backend returns populated product objects in 'items.product'
+          const flattenedCart = response.data.data.map(item => ({
+            ...item.product,
+            quantity: item.quantity,
+            productModel: item.productModel,
+            metadata: item.metadata
+          }));
+          setCartItems(flattenedCart);
+        }
+      } catch (error) {
+        console.error('Failed to fetch cart:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCart();
+  }, [isSignedIn, isLoaded]);
+
+  const addToCart = useCallback(async (product, quantity = 1) => {
+    if (!isSignedIn) {
+      toast.error('Please login to add items to your cart', {
+        icon: '🔒',
+        duration: 3000
+      });
+      return;
     }
-  }, [cartItems]);
 
-  const addToCart = useCallback((product, quantity = 1) => {
-    setCartItems(prev => {
-      const productId = getCartItemId(product);
-      const existing = prev.find(item => getCartItemId(item) === productId);
-      const updated = existing
-        ? prev.map(item =>
-            getCartItemId(item) === productId
-              ? { ...item, quantity: item.quantity + quantity }
-              : item
-          )
-        : [...prev, { ...product, id: productId, quantity }];
-      return updated;
-    });
-  }, []);
+    const productId = product._id || product.id;
+    const productModel = product.productModel || 
+                        (product.customizationSteps ? 'PersonalizedProduct' : 'Product');
 
-  const removeFromCart = useCallback(productId => {
-    setCartItems(prev => prev.filter(item => getCartItemId(item) !== productId));
-  }, []);
+    try {
+      const response = await api.post('/cart/add', {
+        productId,
+        productModel,
+        quantity
+      });
 
-  const clearCart = useCallback(() => {
-    setCartItems([]);
-  }, []);
+      if (response.data.success) {
+        const flattenedCart = response.data.data.map(item => ({
+          ...item.product,
+          quantity: item.quantity,
+          productModel: item.productModel,
+          metadata: item.metadata
+        }));
+        setCartItems(flattenedCart);
+        toast.success(`${product.name} added to cart`, { icon: '🛒' });
+      }
+    } catch (error) {
+      toast.error('Failed to add item to cart');
+      console.error(error);
+    }
+  }, [isSignedIn]);
 
-  const updateQuantity = useCallback((productId, newQuantity) => {
-    setCartItems(prev =>
-      prev.map(item =>
-        getCartItemId(item) === productId ? { ...item, quantity: Math.max(1, newQuantity) } : item
-      )
-    );
-  }, []);
+  const removeFromCart = useCallback(async (productId) => {
+    if (!isSignedIn) return;
+
+    try {
+      const response = await api.delete(`/cart/remove/${productId}`);
+      if (response.data.success) {
+        const flattenedCart = response.data.data.map(item => ({
+          ...item.product,
+          quantity: item.quantity,
+          productModel: item.productModel,
+          metadata: item.metadata
+        }));
+        setCartItems(flattenedCart);
+        toast.success('Item removed from cart');
+      }
+    } catch (error) {
+      console.error('Failed to remove from cart:', error);
+      toast.error('Failed to remove item');
+    }
+  }, [isSignedIn]);
+
+  const updateQuantity = useCallback(async (productId, newQuantity) => {
+    if (!isSignedIn) return;
+    if (newQuantity < 1) return;
+
+    try {
+      const response = await api.put('/cart/update', {
+        productId,
+        quantity: newQuantity
+      });
+
+      if (response.data.success) {
+        const flattenedCart = response.data.data.map(item => ({
+          ...item.product,
+          quantity: item.quantity,
+          productModel: item.productModel,
+          metadata: item.metadata
+        }));
+        setCartItems(flattenedCart);
+      }
+    } catch (error) {
+      console.error('Failed to update quantity:', error);
+    }
+  }, [isSignedIn]);
+
+  const clearCart = useCallback(async () => {
+    if (!isSignedIn) return;
+
+    try {
+      const response = await api.delete('/cart/clear');
+      if (response.data.success) {
+        setCartItems([]);
+      }
+    } catch (error) {
+      console.error('Failed to clear cart:', error);
+    }
+  }, [isSignedIn]);
 
   const value = useMemo(() => ({
     cartItems,
     cart: cartItems,
+    loading,
     addToCart,
     removeFromCart,
-    clearCart,
     updateQuantity,
-  }), [cartItems, addToCart, removeFromCart, clearCart, updateQuantity]);
+    clearCart,
+    getCartItemId
+  }), [cartItems, loading, addToCart, removeFromCart, updateQuantity, clearCart]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
+
+export const CartProvider = ({ children }) => {
+  const { clerkReady } = useClerkMount();
+
+  if (!clerkReady) {
+    const guestValue = {
+      cartItems: [],
+      cart: [],
+      loading: false,
+      addToCart: () => toast.error('Please login to use cart', { icon: '🔒' }),
+      removeFromCart: () => {},
+      updateQuantity: () => {},
+      clearCart: () => {},
+      getCartItemId: (item) => item?.id || item?._id
+    };
+
+    return (
+      <CartContext.Provider value={guestValue}>
+        {children}
+      </CartContext.Provider>
+    );
+  }
+
+  return <CartManager>{children}</CartManager>;
+};
+
+export const useCart = () => useContext(CartContext);
