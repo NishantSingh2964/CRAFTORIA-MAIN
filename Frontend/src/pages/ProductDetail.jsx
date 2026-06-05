@@ -387,7 +387,6 @@ const ProductDetail = () => {
                     setIsPersonalizing(true);
                   } else {
                     addToCart(product, quantity);
-                    toast.success('Product added successfully');
                   }
                 }}
                 className="w-full h-14 rounded-md bg-[#760000] text-white action-link shadow-[0_12px_26px_rgba(118,0,0,0.22)] hover:bg-[#760000] transition"
@@ -662,7 +661,6 @@ const ProductDetail = () => {
           } : product;
 
           addToCart(finalProduct, quantity);
-          toast.success(isActuallyPersonalized ? 'Added to cart with personalization (+₹200)' : 'Added to cart!');
         }}
       />
     </div>

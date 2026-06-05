@@ -58,6 +58,9 @@ const CartManager = ({ children }) => {
     const productModel = product.productModel || 
                         (product.customizationSteps ? 'PersonalizedProduct' : 'Product');
 
+    // Check if product is already in the cart before API call
+    const alreadyInCart = cartItems.some(item => (item._id || item.id) === productId);
+
     try {
       const response = await api.post('/cart/add', {
         productId,
@@ -73,13 +76,26 @@ const CartManager = ({ children }) => {
           metadata: item.metadata
         }));
         setCartItems(flattenedCart);
-        toast.success(`${product.name} added to cart`, { icon: '🛒' });
+
+        if (alreadyInCart) {
+          toast(`${product.name} is already in the cart — quantity updated!`, {
+            icon: '🛒',
+            duration: 3000,
+            style: {
+              background: '#fff7ed',
+              border: '1px solid #fed7aa',
+              color: '#9a3412'
+            }
+          });
+        } else {
+          toast.success(`${product.name} added to cart`, { icon: '🛒' });
+        }
       }
     } catch (error) {
       toast.error('Failed to add item to cart');
       console.error(error);
     }
-  }, [isSignedIn]);
+  }, [isSignedIn, cartItems, getCartItemId]);
 
   const removeFromCart = useCallback(async (productId) => {
     if (!isSignedIn) return;

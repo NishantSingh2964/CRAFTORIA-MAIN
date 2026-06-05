@@ -91,7 +91,7 @@ const WishlistManager = ({ children, setWishlist, wishlist, setLoading, loading 
   };
 
   return (
-    <WishlistContext.Provider value={{ wishlist, toggleWishlist, removeFromWishlist, isInWishlist, loading }}>
+    <WishlistContext.Provider value={{ wishlist, toggleWishlist, removeFromWishlist, isInWishlist, loading, isSignedIn: !!isSignedIn, clerkReady: true }}>
       {children}
     </WishlistContext.Provider>
   );
@@ -115,7 +115,9 @@ export const WishlistProvider = ({ children }) => {
       },
       removeFromWishlist: () => {},
       isInWishlist: () => false,
-      loading: false
+      loading: false,
+      isSignedIn: false,
+      clerkReady: false
     };
 
     return (

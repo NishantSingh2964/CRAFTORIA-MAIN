@@ -4,7 +4,6 @@ import toast from 'react-hot-toast';
 import { ArrowRight, CheckCircle2, Gift, Heart, Pencil, Share2, Trash2, Truck, Image as ImageIcon } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
-import { useAuth } from '@clerk/clerk-react';
 import { formatPrice } from '../utils/formatPrice';
 import wishlistHero from '../assets/home/Wishlist.png';
 import touchImage from '../assets/home/Touch.png';
@@ -38,10 +37,9 @@ const normalizeProduct = (product) => ({
 });
 
 const Wishlist = () => {
-  const { wishlist, removeFromWishlist, loading } = useWishlist();
+  const { wishlist, removeFromWishlist, loading, isSignedIn, clerkReady } = useWishlist();
   const { addToCart } = useCart();
   const [sortBy, setSortBy] = useState('recent');
-  const { isLoaded, isSignedIn } = useAuth(); // Assuming useAuth is imported
 
   const sortedWishlist = useMemo(() => {
     const items = [...wishlist];
@@ -59,10 +57,10 @@ const Wishlist = () => {
 
   const handleAddToCart = (product) => {
     addToCart(normalizeProduct(product));
-    toast.success('Added to cart');
   };
 
-  if (!isLoaded || (loading && wishlist.length === 0)) {
+  // Show a spinner while Clerk is still loading (prevents flash of 'Login Required' for authenticated users)
+  if (!clerkReady || (loading && wishlist.length === 0)) {
     return (
       <div className="flex min-h-screen items-center justify-center pt-20">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#760000] border-t-transparent"></div>

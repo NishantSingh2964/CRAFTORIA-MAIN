@@ -374,7 +374,6 @@ const Cart = () => {
                 type="button"
                 onClick={() => {
                   addToCart(item);
-                  toast.success('Added to cart');
                 }}
                 className="w-full rounded-md border border-[#760000] py-2.5 sm:py-3 text-center action-link text-[10px] sm:text-[11px] text-[#760000] hover:bg-[#760000] hover:text-white transition bg-white"
               >
