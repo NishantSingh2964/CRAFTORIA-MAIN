@@ -146,6 +146,15 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+  .animate-marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee var(--duration, 40s) linear infinite;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
 }
 
 @keyframes slideDown {

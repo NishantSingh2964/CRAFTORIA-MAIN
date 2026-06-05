@@ -40,9 +40,8 @@ const UserOrderDetailsModal = ({ order, onClose }) => {
             <div className="absolute top-1/2 left-0 w-full h-[2px] bg-gray-100 -translate-y-1/2 -z-10" />
             {steps.map((step, idx) => (
               <div key={idx} className="flex flex-col items-center gap-2 bg-white px-2">
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center border-2 ${
-                  step.completed ? 'bg-red-50 border-[#760000] text-[#760000]' : 'bg-white border-gray-200 text-gray-300'
-                }`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center border-2 ${step.completed ? 'bg-red-50 border-[#760000] text-[#760000]' : 'bg-white border-gray-200 text-gray-300'
+                  }`}>
                   <step.icon className="h-5 w-5" />
                 </div>
                 <span className={`text-[10px] font-bold uppercase tracking-wider ${step.completed ? 'text-[#760000]' : 'text-gray-400'}`}>
@@ -116,9 +115,9 @@ const UserOrderDetailsModal = ({ order, onClose }) => {
         </div>
 
         <div className="p-6 bg-gray-50/50 border-t border-gray-100">
-           <button onClick={onClose} className="w-full h-11 bg-gray-900 text-white font-bold rounded-xl hover:bg-black transition text-sm uppercase tracking-widest">
+          <button onClick={onClose} className="w-full h-11 bg-gray-900 text-white font-bold rounded-xl hover:bg-black transition text-sm uppercase tracking-widest">
             Close View
-           </button>
+          </button>
         </div>
       </div>
     </div>,

@@ -303,9 +303,8 @@ const ProductDetail = () => {
                   <button
                     key={idx}
                     onClick={() => setActiveImage(img)}
-                    className={`relative shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-all ${
-                      activeImage === img ? 'border-[#760000] p-0.5' : 'border-transparent opacity-70 hover:opacity-100'
-                    }`}
+                    className={`relative shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-all ${activeImage === img ? 'border-[#760000] p-0.5' : 'border-transparent opacity-70 hover:opacity-100'
+                      }`}
                   >
                     <img src={img} alt={`${product.name} ${idx + 1}`} className="w-full h-full object-cover" />
                   </button>
@@ -394,11 +393,10 @@ const ProductDetail = () => {
                     addToCart(product, quantity);
                   }
                 }}
-                className={`w-full h-14 rounded-md transition duration-300 font-sans font-bold text-xs uppercase tracking-[0.1em] flex items-center justify-center gap-2 ${
-                  isInCart 
-                    ? "bg-[#fff5f5] text-[#760000] border border-[#760000]/30 shadow-sm" 
+                className={`w-full h-14 rounded-md transition duration-300 font-sans font-bold text-xs uppercase tracking-[0.1em] flex items-center justify-center gap-2 ${isInCart
+                    ? "bg-[#fff5f5] text-[#760000] border border-[#760000]/30 shadow-sm"
                     : "bg-[#760000] text-white shadow-[0_12px_26px_rgba(118,0,0,0.22)] hover:bg-[#8d0000] hover:shadow-[0_15px_30px_rgba(118,0,0,0.28)]"
-                }`}
+                  }`}
               >
                 {isInCart ? (
                   <>

@@ -124,65 +124,64 @@ const BasketBuilder = ({
               }
             `}
           </style>
-          
+
           <div className="relative flex-1 min-h-[500px] lg:min-h-[600px]">
             <div className="absolute inset-0 overflow-y-auto scrollbar-hide pr-1">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-2 gap-4 pb-12">
-            {productsLoading ? (
-              <div className="col-span-full py-10 text-center">
-                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[#760000] border-t-transparent" />
-                <p className="mt-1 font-sans text-xs text-gray-400">Loading fine gifts...</p>
-              </div>
-            ) : products.length === 0 ? (
-              <div className="col-span-full py-10 text-center">
-                <p className="font-sans text-xs text-gray-400 font-light">No items found in this category.</p>
-              </div>
-            ) : (
-              products.map((item) => (
-                <article
-                  key={item.id}
-                  className="group rounded-3xl border border-white/60 bg-white/90 backdrop-blur-xl p-3 shadow-[0_10px_40px_rgba(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(118,0,0,0.15)]"
-                >
-                  <Link to={`/product/${item.id}`}>
-                    <div className="relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-white to-red-50/40 p-3">
-                      <div className="absolute inset-0 rounded-2xl bg-white/40 blur-2xl" />
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="relative z-10 h-full w-full object-contain drop-shadow-[0_18px_25px_rgba(0,0,0,0.22)] transition-all duration-500 group-hover:scale-110"
-                      />
-                    </div>
-                  </Link>
+                {productsLoading ? (
+                  <div className="col-span-full py-10 text-center">
+                    <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[#760000] border-t-transparent" />
+                    <p className="mt-1 font-sans text-xs text-gray-400">Loading fine gifts...</p>
+                  </div>
+                ) : products.length === 0 ? (
+                  <div className="col-span-full py-10 text-center">
+                    <p className="font-sans text-xs text-gray-400 font-light">No items found in this category.</p>
+                  </div>
+                ) : (
+                  products.map((item) => (
+                    <article
+                      key={item.id}
+                      className="group rounded-3xl border border-white/60 bg-white/90 backdrop-blur-xl p-3 shadow-[0_10px_40px_rgba(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(118,0,0,0.15)]"
+                    >
+                      <Link to={`/product/${item.id}`}>
+                        <div className="relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-white to-red-50/40 p-3">
+                          <div className="absolute inset-0 rounded-2xl bg-white/40 blur-2xl" />
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="relative z-10 h-full w-full object-contain drop-shadow-[0_18px_25px_rgba(0,0,0,0.22)] transition-all duration-500 group-hover:scale-110"
+                          />
+                        </div>
+                      </Link>
 
-                  {/* Wishlist Toggle */}
-                  <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(item); }}
-                    className={`absolute top-4 right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full shadow-sm transition-all duration-300 hover:scale-110 active:scale-95 ${
-                      isInWishlist(item.id) ? 'bg-white text-red-500' : 'bg-white/80 backdrop-blur-sm text-gray-400 hover:bg-white hover:text-red-500'
-                    }`}
-                  >
-                    <Heart size={14} fill={isInWishlist(item.id) ? "currentColor" : "none"} />
-                  </button>
+                      {/* Wishlist Toggle */}
+                      <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(item); }}
+                        className={`absolute top-4 right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full shadow-sm transition-all duration-300 hover:scale-110 active:scale-95 ${isInWishlist(item.id) ? 'bg-white text-red-500' : 'bg-white/80 backdrop-blur-sm text-gray-400 hover:bg-white hover:text-red-500'
+                          }`}
+                      >
+                        <Heart size={14} fill={isInWishlist(item.id) ? "currentColor" : "none"} />
+                      </button>
 
-                  <div className="pt-3">
-                      <h4 className="font-sans text-[13px] font-semibold leading-snug text-gray-900 line-clamp-1 group-hover:text-[#760000]">{item.name}</h4>
-                      <p className="mt-1 font-sans text-xs text-gray-500">{formatPrice(item.price)}</p>
-                    </div>
-                  <button
-                    type="button"
-                    onClick={() => onAddItem(item)}
-                    disabled={isGenerating || aiGeneratedImages.length > 0}
-                    className={`mt-3 flex w-full items-center justify-center gap-1 rounded-lg px-3 py-2 font-sans text-[11px] font-bold uppercase tracking-[0.1em] transition-all duration-300 ${(isGenerating || aiGeneratedImages.length > 0)
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-[#760000] text-white hover:bg-red-800 hover:scale-[1.03]'
-                      }`}
-                  >
-                    <span aria-hidden="true">+</span>
-                    Add
-                  </button>
-                </article>
-              ))
-            )}
+                      <div className="pt-3">
+                        <h4 className="font-sans text-[13px] font-semibold leading-snug text-gray-900 line-clamp-1 group-hover:text-[#760000]">{item.name}</h4>
+                        <p className="mt-1 font-sans text-xs text-gray-500">{formatPrice(item.price)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => onAddItem(item)}
+                        disabled={isGenerating || aiGeneratedImages.length > 0}
+                        className={`mt-3 flex w-full items-center justify-center gap-1 rounded-lg px-3 py-2 font-sans text-[11px] font-bold uppercase tracking-[0.1em] transition-all duration-300 ${(isGenerating || aiGeneratedImages.length > 0)
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-[#760000] text-white hover:bg-red-800 hover:scale-[1.03]'
+                          }`}
+                      >
+                        <span aria-hidden="true">+</span>
+                        Add
+                      </button>
+                    </article>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -368,5 +367,6 @@ const BasketBuilder = ({
     </section>
   );
 };
+
 
 export default BasketBuilder;

@@ -270,7 +270,7 @@ const Checkout = () => {
 
   const handlePayment = async () => {
     if (!validateForm()) return;
-console.log('🔄 Starting payment processing', form);
+    console.log('🔄 Starting payment processing', form);
 
     if (form.saveAddress) {
       try {
@@ -313,10 +313,10 @@ console.log('🔄 Starting payment processing', form);
       // Mark as placed in session storage to persist across back button navigation
       sessionStorage.setItem('lastOrderPlaced', 'true');
       setOrderPlaced(true);
-      
+
       // Replace history state so back button from Stripe goes to My Orders
       window.history.replaceState(null, '', `/my-orders?payment=cancelled&orderId=${res.orderId}`);
-      
+
       clearCart();
       window.location.href = res.url;
     } else {
@@ -392,11 +392,10 @@ console.log('🔄 Starting payment processing', form);
                       {step.path && !isActive ? (
                         <Link
                           to={step.path}
-                          className={`flex h-9 w-9 items-center justify-center rounded-full border-2 transition ${
-                            isComplete
+                          className={`flex h-9 w-9 items-center justify-center rounded-full border-2 transition ${isComplete
                               ? 'bg-[#760000] border-[#760000] text-white'
                               : 'border-gray-300 text-gray-400 bg-white'
-                          }`}
+                            }`}
                         >
                           {isComplete ? (
                             <Icon className="h-4 w-4">
@@ -408,13 +407,12 @@ console.log('🔄 Starting payment processing', form);
                         </Link>
                       ) : (
                         <div
-                          className={`flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-bold ${
-                            isActive
+                          className={`flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-bold ${isActive
                               ? 'bg-[#760000] border-[#760000] text-white'
                               : isComplete
                                 ? 'bg-[#760000] border-[#760000] text-white'
                                 : 'border-gray-300 text-gray-400 bg-white'
-                          }`}
+                            }`}
                         >
                           {isComplete && !isActive ? (
                             <Icon className="h-4 w-4">
@@ -426,18 +424,16 @@ console.log('🔄 Starting payment processing', form);
                         </div>
                       )}
                       <span
-                        className={`font-heading text-[11px] font-semibold uppercase tracking-[0.12em] ${
-                          isActive || isComplete ? 'text-[#760000]' : 'text-gray-400'
-                        }`}
+                        className={`font-heading text-[11px] font-semibold uppercase tracking-[0.12em] ${isActive || isComplete ? 'text-[#760000]' : 'text-gray-400'
+                          }`}
                       >
                         {step.label}
                       </span>
                     </div>
                     {!isLast && (
                       <div
-                        className={`h-0.5 w-16 sm:w-24 lg:w-32 mx-2 sm:mx-4 mb-6 shrink-0 ${
-                          isComplete ? 'bg-[#760000]' : 'bg-gray-200'
-                        }`}
+                        className={`h-0.5 w-16 sm:w-24 lg:w-32 mx-2 sm:mx-4 mb-6 shrink-0 ${isComplete ? 'bg-[#760000]' : 'bg-gray-200'
+                          }`}
                       />
                     )}
                   </React.Fragment>

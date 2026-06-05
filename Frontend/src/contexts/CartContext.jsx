@@ -55,8 +55,8 @@ const CartManager = ({ children }) => {
     }
 
     const productId = product._id || product.id;
-    const productModel = product.productModel || 
-                        (product.customizationSteps ? 'PersonalizedProduct' : 'Product');
+    const productModel = product.productModel ||
+      (product.customizationSteps ? 'PersonalizedProduct' : 'Product');
 
     // Check if product is already in the cart before API call
     const alreadyInCart = cartItems.some(item => (item._id || item.id) === productId);
@@ -78,7 +78,7 @@ const CartManager = ({ children }) => {
         setCartItems(flattenedCart);
 
         if (alreadyInCart) {
-          toast(`${product.name} is already in the cart — quantity updated!`, {
+          toast(`${product.name} is already in cart — quantity updated!`, {
             icon: '🛒',
             duration: 3000,
             style: {
@@ -95,7 +95,7 @@ const CartManager = ({ children }) => {
       toast.error('Failed to add item to cart');
       console.error(error);
     }
-  }, [isSignedIn, cartItems, getCartItemId]);
+  }, [isSignedIn]);
 
   const removeFromCart = useCallback(async (productId) => {
     if (!isSignedIn) return;
@@ -178,9 +178,9 @@ export const CartProvider = ({ children }) => {
       cart: [],
       loading: false,
       addToCart: () => toast.error('Please login to use cart', { icon: '🔒' }),
-      removeFromCart: () => {},
-      updateQuantity: () => {},
-      clearCart: () => {},
+      removeFromCart: () => { },
+      updateQuantity: () => { },
+      clearCart: () => { },
       getCartItemId: (item) => item?.id || item?._id
     };
 

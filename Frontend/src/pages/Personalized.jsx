@@ -17,12 +17,13 @@ import BasketBuilder from '../components/Personalized/BasketBuilder';
 import CatalogSection from '../components/Personalized/CatalogSection';
 import ExperienceForm from '../components/Personalized/ExperienceForm';
 import ArtisanalRevealModal from '../components/Personalized/ArtisanalRevealModal.jsx';
+import PersonalizationModal from '../components/Personalized/PersonalizationModal.jsx';
 
 // Data
-import { 
+import {
   basketProducts,
   categories,
-  emptyContactForm 
+  emptyContactForm
 } from '../components/Personalized/data';
 import { stories } from '../assets.js';
 
@@ -33,6 +34,7 @@ const Personalized = () => {
   const [basketQuantity, setBasketQuantity] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiGeneratedImages, setAiGeneratedImages] = useState([]);
+  const [isPersonalizingBasket, setIsPersonalizingBasket] = useState(false);
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { products: allProducts, fetchProducts, loading: productsLoading } = useProducts();
@@ -48,17 +50,20 @@ const Personalized = () => {
   // Use live data for the Basket Builder (Choose Gifts) section
   const basketProductsList = livePersonalizedProducts.map(p => ({
     id: p._id,
+    _id: p._id,
     name: p.name,
     price: p.currentPrice,
+    currentPrice: p.currentPrice,
     weight: 0.5,
     category: p.category || 'Extras',
     image: p.image,
-    emoji: '🎁'
+    emoji: '🎁',
+    productModel: 'PersonalizedProduct'
   }));
 
   // Fallback to mock data if no live products exist
   const effectiveBasketProducts = basketProductsList.length > 0 ? basketProductsList : basketProducts;
-  
+
   const dynamicCategories = ['All', ...new Set(effectiveBasketProducts.map(p => p.category))];
 
   useEffect(() => {
@@ -142,24 +147,32 @@ const Personalized = () => {
     }
   };
 
-  const handleAddBasketToCart = () => {
+  // Called when user clicks 'Add to Cart' — opens personalization modal first
+  const handleAddToCartClick = () => {
     if (selectedItems.length === 0) {
       toast.error('Please add at least one gift');
       return;
     }
-    addToCart({
-      id: `custom-basket-${Date.now()}`,
-      name: `Custom Gift Basket (${itemCount} items)`,
-      category: 'Personalized',
-      currentPrice: formatPrice(basketTotal),
-      originalPrice: formatPrice(basketTotal),
-      image: aiGeneratedImages.length > 0 ? aiGeneratedImages[0] : selectedItems[0].image,
-      description: selectedItems.map(i => `${i.name} x${i.quantity}`).join(', '),
-      rating: 5,
-      badge: 'Custom Basket',
-    }, basketQuantity);
-    toast.success('Added to cart');
-    return true;
+    setIsPersonalizingBasket(true);
+  };
+
+  // Called after personalization modal confirms (with or without personalization)
+  const handleAddBasketToCart = async (personalization = {}) => {
+    if (selectedItems.length === 0) return false;
+    
+    try {
+      for (const item of selectedItems) {
+        await addToCart(item, item.quantity);
+      }
+      
+      toast.success('Hamper added to cart! 🎁');
+      setBasketItems([]);
+      return true;
+    } catch (error) {
+      console.error('Failed to add basket to cart:', error);
+      toast.error('Failed to add some items');
+      return false;
+    }
   };
 
   const handleContactSubmit = async (e) => {
@@ -172,50 +185,57 @@ const Personalized = () => {
     <div className="relative bg-[#fcfbf9] min-h-screen pb-16 overflow-hidden">
       <PersonalizedHero image={personalizeImage} />
       <div className="site-container relative z-10 pt-16 sm:pt-20">
-        <BasketBuilder 
-           basket={basket}
-           basketItems={basketItems}
-           categories={dynamicCategories}
-           activeCategory={activeCategory}
-           onCategoryChange={setActiveCategory}
-           products={filteredBasketProducts}
-           productsLoading={productsLoading}
-           selectedItems={selectedItems}
-           basketTotal={basketTotal}
-           basketWeight={basketWeight}
-           itemCount={itemCount}
-           basketQuantity={basketQuantity}
-           onQuantityChange={setBasketQuantity}
-           onAddItem={addBasketItem}
-           onUpdateItemQuantity={updateBasketItemQuantity}
-           onClearBasket={() => setBasketItems([])}
-           onGenerateAI={handleGenerateAI}
-           isGenerating={isGenerating}
-           onAddToCart={handleAddBasketToCart}
-           onWhatsApp={() => {}} 
-           formatPrice={formatPrice}
-           aiGeneratedImages={aiGeneratedImages}
+        <BasketBuilder
+          basket={basket}
+          basketItems={basketItems}
+          categories={dynamicCategories}
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+          products={filteredBasketProducts}
+          productsLoading={productsLoading}
+          selectedItems={selectedItems}
+          basketTotal={basketTotal}
+          basketWeight={basketWeight}
+          itemCount={itemCount}
+          basketQuantity={basketQuantity}
+          onQuantityChange={setBasketQuantity}
+          onAddItem={addBasketItem}
+          onUpdateItemQuantity={updateBasketItemQuantity}
+          onClearBasket={() => setBasketItems([])}
+          onGenerateAI={handleGenerateAI}
+          isGenerating={isGenerating}
+          onAddToCart={handleAddToCartClick}
+          onWhatsApp={() => { }}
+          formatPrice={formatPrice}
+          aiGeneratedImages={aiGeneratedImages}
         />
         <CatalogSection stories={displayStories} />
-        <ExperienceForm 
-           form={contactForm}
-           updateField={(f, v) => setContactForm(p => ({...p, [f]: v}))}
-           onSubmit={handleContactSubmit}
-           onWhatsApp={() => {}}
+        <ExperienceForm
+          form={contactForm}
+          updateField={(f, v) => setContactForm(p => ({ ...p, [f]: v }))}
+          onSubmit={handleContactSubmit}
+          onWhatsApp={() => { }}
         />
       </div>
       {aiGeneratedImages.length > 0 && (
-        <ArtisanalRevealModal 
-          image={aiGeneratedImages[0]} 
-          selectedItems={selectedItems} 
-          basketTotal={basketTotal} 
-          onOrderNow={() => { handleAddBasketToCart(); navigate('/cart'); }} 
-          onWhatsApp={() => {}} 
-          onClose={() => setAiGeneratedImages([])} 
+        <ArtisanalRevealModal
+          image={aiGeneratedImages[0]}
+          selectedItems={selectedItems}
+          basketTotal={basketTotal}
+          onOrderNow={() => { handleAddBasketToCart({}).then(success => { if(success) navigate('/cart'); }); }}
+          onWhatsApp={() => { }}
+          onClose={() => setAiGeneratedImages([])}
         />
       )}
+      <PersonalizationModal
+        isOpen={isPersonalizingBasket}
+        onClose={() => setIsPersonalizingBasket(false)}
+        product={{ name: 'Your Gift Basket', personalizationType: 'Both' }}
+        onConfirm={(personalization) => handleAddBasketToCart(personalization)}
+      />
     </div>
   );
 };
+
 
 export default Personalized;

@@ -19,11 +19,25 @@ exports.getCart = async (req, res) => {
         const user = await getUser(req, res);
         if (!user) return;
 
-        let cart = await Cart.findOne({ user: user._id })
-            .populate({
+        let cart = await Cart.findOne({ user: user._id });
+
+        if (cart) {
+            // Sanity check: Remove any items with invalid productModel or missing product
+            const originalCount = cart.items.length;
+            cart.items = cart.items.filter(item => 
+                item.product && 
+                ['Product', 'PersonalizedProduct'].includes(item.productModel)
+            );
+            
+            if (cart.items.length !== originalCount) {
+                await cart.save();
+            }
+
+            await cart.populate({
                 path: 'items.product',
                 select: 'name image price currentPrice originalPrice sku tag'
             });
+        }
 
         if (!cart) {
             cart = await Cart.create({ user: user._id, items: [] });
@@ -55,8 +69,14 @@ exports.addToCart = async (req, res) => {
             cart = new Cart({ user: user._id, items: [] });
         }
 
+        // *** CRITICAL: Purge any invalid items BEFORE saving to avoid Mongoose ValidatorError ***
+        cart.items = cart.items.filter(item =>
+            item.product &&
+            ['Product', 'PersonalizedProduct'].includes(item.productModel)
+        );
+
         const existingItemIndex = cart.items.findIndex(
-            item => item.product.toString() === productId && item.productModel === productModel
+            item => item.product && item.product.toString() === productId && item.productModel === productModel
         );
 
         if (existingItemIndex > -1) {
@@ -71,6 +91,7 @@ exports.addToCart = async (req, res) => {
         }
 
         await cart.save();
+
         await cart.populate({
             path: 'items.product',
             select: 'name image price currentPrice originalPrice sku tag'
@@ -99,7 +120,7 @@ exports.updateQuantity = async (req, res) => {
         const cart = await Cart.findOne({ user: user._id });
         if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
 
-        const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+        const itemIndex = cart.items.findIndex(item => item.product && item.product.toString() === productId);
         if (itemIndex > -1) {
             cart.items[itemIndex].quantity = Math.max(1, quantity);
             await cart.save();
@@ -130,7 +151,7 @@ exports.removeFromCart = async (req, res) => {
         const cart = await Cart.findOne({ user: user._id });
         if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
 
-        cart.items = cart.items.filter(item => item.product.toString() !== productId);
+        cart.items = cart.items.filter(item => item.product && item.product.toString() !== productId);
         await cart.save();
         await cart.populate({
             path: 'items.product',

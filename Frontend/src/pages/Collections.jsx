@@ -53,13 +53,13 @@ const FilterSelect = ({ id, value, onChange, options, ariaLabel }) => (
 const Collections = () => {
   const { products, fetchProducts, loading: productsLoading } = useProducts();
   const { occasions, loading: occasionsLoading } = useOccasions();
-  
+
   useEffect(() => {
     if (products.length === 0) fetchProducts();
   }, []);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   const occasionsOptions = useMemo(() => {
     return ['All Occasions', ...occasions.map(o => o.name)];
   }, [occasions]);
@@ -112,12 +112,12 @@ const Collections = () => {
         if (selectedCategory === 'All Gifts') return true;
         const catLower = (prod.category || '').toLowerCase();
         const selectedCatLower = selectedCategory.toLowerCase();
-        
+
         // Match if category includes the selected one (e.g. "Personalised Gifts" matches "Personalized")
         if (selectedCatLower.includes('personalised') || selectedCatLower.includes('personalized')) {
           return catLower.includes('personalized') || catLower.includes('personalised');
         }
-        
+
         return catLower.includes(selectedCatLower.replace(' gifts', '').replace(' & hampers', '').replace(' & bouquets', ''));
       })
       .filter((prod) => {
@@ -128,12 +128,12 @@ const Collections = () => {
       .filter((prod) => {
         // 3. Occasions Filtration
         if (selectedOccasions.length === 0) return true;
-        const prodOccasions = prod.occasions || []; 
-        const prodOccasionName = String(prod.occasion || '').toLowerCase(); 
+        const prodOccasions = prod.occasions || [];
+        const prodOccasionName = String(prod.occasion || '').toLowerCase();
 
         return selectedOccasions.some(occ => {
           const occLower = String(occ || '').toLowerCase();
-          
+
           // Check in array (could be strings or populated objects)
           const matchesInArray = prodOccasions.some(o => {
             const name = typeof o === 'object' ? o?.name : o;
@@ -182,13 +182,13 @@ const Collections = () => {
 
   return (
     <div className="bg-[#fafafa] min-h-screen pb-16">
-      
+
       {/* Top Luxury Static Present Banner — EXACT UI style but more compact */}
       <div className="relative min-h-[500px] sm:min-h-[520px] flex items-center overflow-hidden bg-white">
         {/* Full-bleed Background Image */}
         <div className="absolute inset-0 z-0">
-          <img 
-            src={hero3} 
+          <img
+            src={hero3}
             alt=""
             className="w-full h-full object-cover object-center"
             fetchPriority="high"
@@ -197,14 +197,14 @@ const Collections = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-white/30 via-white/5 to-transparent pointer-events-none" />
         </div>
-        
+
         {/* Main Content Area */}
         <div className="site-container relative z-10 w-full">
           <div className="max-w-2xl lg:max-w-3xl py-8 relative">
             {/* Responsive Luxury Title with Loop-de-loop Swash */}
             <h1 className="mb-5 flex flex-col tracking-tight drop-shadow-sm">
               <span className="relative inline-block pb-4">
-                <span className="font-script text-red-700 block transform -rotate-1 leading-none" style={{fontSize: 'clamp(2.8rem, 6vw, 5rem)'}}>
+                <span className="font-script text-red-700 block transform -rotate-1 leading-none" style={{ fontSize: 'clamp(2.8rem, 6vw, 5rem)' }}>
                   Exquisite
                 </span>
                 {/* Elegant Vector Scroll Flourish underneath */}
@@ -212,16 +212,16 @@ const Collections = () => {
                   <path d="M 20,15 C 45,11 75,13 92,18 C 95,19 97,22 96,24 C 95,25 93,24 92,22 C 91,20 93,17 97,17 C 101,17 103,19 104,22 C 105,24 103,25 102,24 C 101,22 103,19 106,18 C 123,13 153,11 178,15" />
                 </svg>
               </span>
-              <span className="font-serif font-bold text-gray-900 block leading-tight" style={{fontSize: 'clamp(3rem, 6.5vw, 5.25rem)'}}>
+              <span className="font-serif font-bold text-gray-900 block leading-tight" style={{ fontSize: 'clamp(3rem, 6.5vw, 5.25rem)' }}>
                 Collections
               </span>
             </h1>
-            
+
             {/* Description Text */}
             <p className="font-sans text-base sm:text-[1.05rem] text-gray-700 mb-7 max-w-lg leading-[1.75] font-normal tracking-wide">
               Browse our signature selection of masterfully curated gifts, artisan treats, and bespoke keepsakes.
             </p>
-            
+
             {/* Call-to-action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <a href="#catalog" className="group relative w-full sm:w-auto px-8 py-3.5 bg-red-700 text-white text-xs font-bold tracking-widest uppercase overflow-hidden rounded-sm transition-all shadow-[0_4px_15px_rgba(118,0,0,0.3)] hover:shadow-[0_6px_20px_rgba(118,0,0,0.5)] hover:-translate-y-0.5 cursor-pointer flex items-center justify-center">
@@ -239,7 +239,7 @@ const Collections = () => {
       {/* Main Catalog View Container */}
       <div id="catalog" className="site-container pt-12 sm:pt-16 z-10 relative overflow-visible">
         <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-10">
-          
+
           {/* LEFT: sticky filter column — fixed width so it never shrinks */}
           <div className="w-full lg:w-72 xl:w-80 shrink-0 lg:sticky lg:top-24 lg:self-start z-30">
             {/* Mobile accordion toggle button */}
@@ -250,12 +250,12 @@ const Collections = () => {
             >
               <span className="flex items-center gap-2.5">
                 <svg className="text-[#760000]" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="4" x2="20" y1="21" y2="21"/>
-                  <line x1="4" x2="14" y1="14" y2="14"/>
-                  <line x1="4" x2="18" y1="7" y2="7"/>
-                  <circle cx="14" cy="7" r="2"/>
-                  <circle cx="18" cy="14" r="2"/>
-                  <circle cx="10" cy="21" r="2"/>
+                  <line x1="4" x2="20" y1="21" y2="21" />
+                  <line x1="4" x2="14" y1="14" y2="14" />
+                  <line x1="4" x2="18" y1="7" y2="7" />
+                  <circle cx="14" cy="7" r="2" />
+                  <circle cx="18" cy="14" r="2" />
+                  <circle cx="10" cy="21" r="2" />
                 </svg>
                 {isFiltersOpen ? 'Hide Filters' : 'Filter Products'}
               </span>
@@ -377,7 +377,7 @@ const Collections = () => {
 
           {/* RIGHT: products */}
           <div className="flex-1 min-w-0 w-full">
-            
+
             {/* Search & sort bar */}
             <div className="bg-white border border-gray-100/80 rounded-[20px] sm:rounded-[24px] px-4 sm:px-6 py-4 shadow-[0_12px_40px_rgba(0,0,0,0.02)] flex flex-col lg:flex-row lg:items-center gap-4 mb-8">
               <form onSubmit={handleSearch} className="flex flex-col sm:flex-row flex-1 gap-2.5 min-w-0">
@@ -448,9 +448,9 @@ const Collections = () => {
                 <article key={prod._id} className="bg-white rounded-[28px] border border-gray-100 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] hover:-translate-y-2 transition-all duration-500 group flex flex-col h-full">
                   {/* Square Image container */}
                   <div className="relative aspect-[4/3] overflow-hidden bg-gray-50 p-3.5">
-                    <img 
-                      src={prod.image} 
-                      alt={prod.name} 
+                    <img
+                      src={prod.image}
+                      alt={prod.name}
                       className="w-full h-full object-cover rounded-[22px] transform group-hover:scale-105 transition-transform duration-700 ease-out"
                       loading="lazy"
                       decoding="async"
@@ -460,37 +460,37 @@ const Collections = () => {
                     {prod.personalizationType && prod.personalizationType !== 'None' && (
                       <div className="absolute top-5 left-5 z-20">
                         <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-red-100/50 text-[9px] font-bold uppercase tracking-wider text-[#760000] shadow-sm">
-                          {prod.personalizationType === 'Both' ? '✨ Personalizable' : 
-                          prod.personalizationType === 'Text' ? (
-                            <><Pencil className="h-2.5 w-2.5" /> Text Only</>
-                          ) : (
-                            <><ImageIcon className="h-2.5 w-2.5" /> Photo Only</>
-                          )}
+                          {prod.personalizationType === 'Both' ? '✨ Personalizable' :
+                            prod.personalizationType === 'Text' ? (
+                              <><Pencil className="h-2.5 w-2.5" /> Text Only</>
+                            ) : (
+                              <><ImageIcon className="h-2.5 w-2.5" /> Photo Only</>
+                            )}
                         </span>
                       </div>
                     )}
 
                     {/* Heart/Wishlist Button toggling with state */}
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); toggleWishlist(prod); }}
                       className="absolute top-5 right-5 p-2.5 bg-white rounded-full shadow-md hover:scale-110 active:scale-95 transition-all duration-300 z-20 cursor-pointer"
                       type="button"
                       aria-label={`${isInWishlist(prod._id) ? 'Remove' : 'Add'} ${prod.name} ${isInWishlist(prod._id) ? 'from' : 'to'} wishlist`}
                       aria-pressed={isInWishlist(prod._id)}
                     >
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        width="18" 
-                        height="18" 
-                        viewBox="0 0 24 24" 
-                        fill={isInWishlist(prod._id) ? "#ef4444" : "none"} 
-                        stroke={isInWishlist(prod._id) ? "#ef4444" : "#9ca3af"} 
-                        strokeWidth="2" 
-                        strokeLinecap="round" 
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill={isInWishlist(prod._id) ? "#ef4444" : "none"}
+                        stroke={isInWishlist(prod._id) ? "#ef4444" : "#9ca3af"}
+                        strokeWidth="2"
+                        strokeLinecap="round"
                         strokeLinejoin="round"
                         className="transition-colors duration-300"
                       >
-                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
                       </svg>
                     </button>
                   </div>
@@ -500,7 +500,7 @@ const Collections = () => {
                     <h3 className="font-serif font-semibold text-[15px] sm:text-base text-gray-900 mb-1.5 line-clamp-2 leading-snug group-hover:text-[#760000] transition-colors duration-300">
                       {prod.name}
                     </h3>
-                    
+
                     {/* Price details */}
                     <div className="flex items-center gap-2.5 mb-5 mt-auto">
                       <span className="font-sans text-[#760000] font-extrabold text-[15px] sm:text-base">₹{prod.currentPrice}</span>
@@ -527,7 +527,7 @@ const Collections = () => {
             {paginatedProducts.length === 0 && (
               <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
                 <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <h3 className="text-lg font-serif font-bold text-gray-800 mb-1">No Products Found</h3>
                 <p className="text-gray-400 text-xs font-light">Try adjusting your filters or search criteria to reveal choices.</p>
@@ -537,16 +537,16 @@ const Collections = () => {
             {/* Figma-Matched Pagination Controls */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2.5 mt-16 pt-6 border-t border-gray-100">
-                
+
                 {/* Prev */}
-                <button 
+                <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
                   className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-800 hover:border-gray-400 transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                   type="button"
                   aria-label="Previous page"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                 </button>
 
                 {/* Page Numbers */}
@@ -556,11 +556,10 @@ const Collections = () => {
                     <button
                       key={pNum}
                       onClick={() => setCurrentPage(pNum)}
-                      className={`w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center transition-all cursor-pointer ${
-                        currentPage === pNum
+                      className={`w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center transition-all cursor-pointer ${currentPage === pNum
                           ? 'bg-[#760000] text-white shadow-md'
                           : 'text-gray-600 hover:bg-gray-100'
-                      }`}
+                        }`}
                       type="button"
                       aria-label={`Go to page ${pNum}`}
                       aria-current={currentPage === pNum ? 'page' : undefined}
@@ -571,14 +570,14 @@ const Collections = () => {
                 })}
 
                 {/* Next */}
-                <button 
+                <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
                   className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-800 hover:border-gray-400 transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                   type="button"
                   aria-label="Next page"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                 </button>
 
               </div>
@@ -592,11 +591,11 @@ const Collections = () => {
       {/* Trust Indicators Features Banner exactly replicating Figma */}
       <div className="site-container mt-16 sm:mt-20 z-10 relative">
         <div className="bg-[#fcfbf9] border border-gray-100 rounded-[24px] py-8 px-4 sm:px-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-2 gap-y-8 lg:gap-y-0">
-          
+
           {/* Item 1 */}
           <div className="flex flex-col items-center text-center px-2 relative lg:after:content-[''] lg:after:absolute lg:after:right-0 lg:after:top-1/2 lg:after:-translate-y-1/2 lg:after:w-[1px] lg:after:h-10 lg:after:bg-gray-200 lg:last:after:hidden">
             <div className="w-10 h-10 rounded-full bg-[#fdfcfb] border border-gray-100 flex items-center justify-center text-[#760000] mb-3.5 shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8H4v4"/><rect width="18" height="12" x="3" y="8" rx="2"/><path d="M12 2v20"/><path d="M12 8H8a2 2 0 0 1-2-2 2 2 0 0 1 2-2h4"/><path d="M12 8h4a2 2 0 0 0 2-2 2 2 0 0 0-2-2h-4"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8H4v4" /><rect width="18" height="12" x="3" y="8" rx="2" /><path d="M12 2v20" /><path d="M12 8H8a2 2 0 0 1-2-2 2 2 0 0 1 2-2h4" /><path d="M12 8h4a2 2 0 0 0 2-2 2 2 0 0 0-2-2h-4" /></svg>
             </div>
             <h4 className="text-gray-900 font-bold text-[11px] sm:text-xs tracking-wide mb-1 font-sans">
               Premium Quality
@@ -609,7 +608,7 @@ const Collections = () => {
           {/* Item 2 */}
           <div className="flex flex-col items-center text-center px-2 relative lg:after:content-[''] lg:after:absolute lg:after:right-0 lg:after:top-1/2 lg:after:-translate-y-1/2 lg:after:w-[1px] lg:after:h-10 lg:after:bg-gray-200 lg:last:after:hidden">
             <div className="w-10 h-10 rounded-full bg-[#fdfcfb] border border-gray-100 flex items-center justify-center text-[#760000] mb-3.5 shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2" /><line x1="2" x2="22" y1="10" y2="10" /></svg>
             </div>
             <h4 className="text-gray-900 font-bold text-[11px] sm:text-xs tracking-wide mb-1 font-sans">
               Secure Payments
@@ -622,7 +621,7 @@ const Collections = () => {
           {/* Item 3 */}
           <div className="flex flex-col items-center text-center px-2 relative lg:after:content-[''] lg:after:absolute lg:after:right-0 lg:after:top-1/2 lg:after:-translate-y-1/2 lg:after:w-[1px] lg:after:h-10 lg:after:bg-gray-200 lg:last:after:hidden">
             <div className="w-10 h-10 rounded-full bg-[#fdfcfb] border border-gray-100 flex items-center justify-center text-[#760000] mb-3.5 shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="13" x="2" y="6" rx="2"/><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="13" x="2" y="6" rx="2" /><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></svg>
             </div>
             <h4 className="text-gray-900 font-bold text-[11px] sm:text-xs tracking-wide mb-1 font-sans">
               Express Delivery
@@ -635,7 +634,7 @@ const Collections = () => {
           {/* Item 4 */}
           <div className="flex flex-col items-center text-center px-2 relative lg:after:content-[''] lg:after:absolute lg:after:right-0 lg:after:top-1/2 lg:after:-translate-y-1/2 lg:after:w-[1px] lg:after:h-10 lg:after:bg-gray-200 lg:last:after:hidden">
             <div className="w-10 h-10 rounded-full bg-[#fdfcfb] border border-gray-100 flex items-center justify-center text-[#760000] mb-3.5 shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" /></svg>
             </div>
             <h4 className="text-gray-900 font-bold text-[11px] sm:text-xs tracking-wide mb-1 font-sans">
               Easy Returns
@@ -648,7 +647,7 @@ const Collections = () => {
           {/* Item 5 */}
           <div className="flex flex-col items-center text-center px-2 relative col-span-2 md:col-span-1">
             <div className="w-10 h-10 rounded-full bg-[#fdfcfb] border border-gray-100 flex items-center justify-center text-[#760000] mb-3.5 shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
             </div>
             <h4 className="text-gray-900 font-bold text-[11px] sm:text-xs tracking-wide mb-1 font-sans">
               Customer Support

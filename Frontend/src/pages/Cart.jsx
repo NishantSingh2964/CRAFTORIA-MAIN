@@ -377,11 +377,10 @@ const Cart = () => {
                   <button
                     type="button"
                     onClick={() => addToCart(item)}
-                    className={`w-full rounded-md py-2.5 sm:py-3 text-center font-sans font-bold text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 ${
-                      isInCart
+                    className={`w-full rounded-md py-2.5 sm:py-3 text-center font-sans font-bold text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 ${isInCart
                         ? "bg-[#fff5f5] text-[#760000] border border-[#760000]/30"
                         : "bg-white border border-[#760000] text-[#760000] hover:bg-[#760000] hover:text-white"
-                    }`}
+                      }`}
                   >
                     {isInCart ? (
                       <>
@@ -405,13 +404,11 @@ const Cart = () => {
           {trustItems.map((item, index) => (
             <div
               key={item.title}
-              className={`flex flex-col items-center text-center px-2 relative ${
-                index === 4 ? 'col-span-2 md:col-span-1' : ''
-              } ${
-                index < trustItems.length - 1
+              className={`flex flex-col items-center text-center px-2 relative ${index === 4 ? 'col-span-2 md:col-span-1' : ''
+                } ${index < trustItems.length - 1
                   ? "lg:after:content-[''] lg:after:absolute lg:after:right-0 lg:after:top-1/2 lg:after:-translate-y-1/2 lg:after:w-px lg:after:h-10 lg:after:bg-gray-200"
                   : ''
-              }`}
+                }`}
             >
               <div className="w-10 h-10 rounded-full bg-[#fdfcfb] border border-gray-100 flex items-center justify-center text-[#760000] mb-3.5 shadow-sm">
                 <Icon className="h-[18px] w-[18px]">{item.icon}</Icon>
