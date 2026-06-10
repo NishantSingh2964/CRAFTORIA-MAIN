@@ -13,11 +13,18 @@ const TopSellingProducts = () => {
     if (products.length === 0) fetchProducts();
   }, []);
 
-  // Sort by sales quantity or reviews as a proxy for popularity
+  // Pin & Fill Logic: Prioritize manual tags, then fill with automatic top sellers
   const topSellingProducts = useMemo(() => {
-    return [...products]
-      .sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0) || (b.reviewCount || 0) - (a.reviewCount || 0))
-      .slice(0, 4);
+    // 1. Get manually pinned products
+    const pinned = products.filter(p => p.homepageCollection === 'Most Selling');
+    
+    // 2. Get others and sort them by current logic (salesCount or reviewCount)
+    const others = products
+      .filter(p => p.homepageCollection !== 'Most Selling')
+      .sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0) || (b.reviewCount || 0) - (a.reviewCount || 0));
+
+    // 3. Combine and take top 4
+    return [...pinned, ...others].slice(0, 4);
   }, [products]);
 
   if (loading && products.length === 0) {

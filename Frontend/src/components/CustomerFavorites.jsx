@@ -13,11 +13,18 @@ const CustomerFavorites = () => {
     if (products.length === 0) fetchProducts();
   }, []);
 
-  // Sort by newest additions first
+  // Pin & Fill Logic: Prioritize manual tags, then fill with automatic newest arrivals
   const displayProducts = useMemo(() => {
-    return [...products]
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 4);
+    // 1. Get manually pinned products
+    const pinned = products.filter(p => p.homepageCollection === 'Recently Launched');
+
+    // 2. Get others and sort them by current logic (newest first)
+    const others = products
+      .filter(p => p.homepageCollection !== 'Recently Launched')
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // 3. Combine and take top 4
+    return [...pinned, ...others].slice(0, 4);
   }, [products]);
 
   if (loading && products.length === 0) {

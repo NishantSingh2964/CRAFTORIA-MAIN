@@ -68,6 +68,11 @@ const productSchema = new mongoose.Schema({
         type: String,
         enum: ['Text', 'Photo', 'Both', 'None'],
         default: 'None'
+    },
+    homepageCollection: {
+        type: String,
+        enum: ['Most Selling', 'Recently Launched', 'Most Admired', 'None'],
+        default: 'None'
     }
 }, {
     timestamps: true

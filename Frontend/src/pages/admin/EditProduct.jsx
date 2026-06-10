@@ -33,6 +33,7 @@ const BADGE_OPTIONS = [
 ];
 
 const PERSONALIZATION_TYPES = ['None', 'Text', 'Photo', 'Both'];
+const HOMEPAGE_COLLECTION_OPTIONS = ['None', 'Most Selling', 'Recently Launched', 'Most Admired'];
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -57,6 +58,7 @@ const EditProduct = () => {
     badge: '',
     isAvailable: true,
     personalizationType: 'None',
+    homepageCollection: 'None',
   });
 
   // Fetch existing product data
@@ -77,6 +79,7 @@ const EditProduct = () => {
           badge: p.badge || '',
           isAvailable: p.isAvailable !== false,
           personalizationType: p.personalizationType || 'None',
+          homepageCollection: p.homepageCollection || 'None',
         });
         
         // Load existing images into previews
@@ -304,6 +307,24 @@ const EditProduct = () => {
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#52606d]" />
                   </div>
+                </label>
+              </div>
+
+              {/* Homepage Collection */}
+              <div className="grid gap-5 md:grid-cols-1">
+                <label className="block space-y-2">
+                  <span className="text-xs font-black uppercase tracking-[0.22em] text-[#8d0000]">Homepage Collection Pinned</span>
+                  <div className="relative">
+                    <select
+                      value={formData.homepageCollection}
+                      onChange={e => updateField('homepageCollection', e.target.value)}
+                      className="h-12 w-full appearance-none rounded-lg border border-[#e4d5cf] bg-[#fafafa] px-4 text-sm text-[#253040] outline-none transition focus:border-[#9a1515] focus:bg-white"
+                    >
+                      {HOMEPAGE_COLLECTION_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#52606d]" />
+                  </div>
+                  <p className="text-[10px] font-medium text-[#8b7772]">Pin this product to a specific section on the homepage.</p>
                 </label>
               </div>
             </div>

@@ -13,20 +13,23 @@ const MostReviewedProducts = () => {
     if (products.length === 0) fetchProducts();
   }, []);
 
-  // Sort by number of testimonials (reviews) and take top 4
+  // Pin & Fill Logic: Prioritize manual tags, then fill with automatic most reviewed
   const topReviewedProducts = useMemo(() => {
-    return [...products]
+    // 1. Get manually pinned products
+    const pinned = products.filter(p => p.homepageCollection === 'Most Admired');
+
+    // 2. Get others and sort them by current logic (review count)
+    const others = products
+      .filter(p => p.homepageCollection !== 'Most Admired')
       .sort((a, b) => {
-        // Priority 1: Number of reviews (from backend aggregate)
         const reviewsA = a.reviewCount || 0;
         const reviewsB = b.reviewCount || 0;
         if (reviewsB !== reviewsA) return reviewsB - reviewsA;
-
-        // Priority 2: Tie-breaker - show older/established products first 
-        // (This ensures contrast with the "Recently Launched" section)
         return new Date(a.createdAt) - new Date(b.createdAt);
-      })
-      .slice(0, 4);
+      });
+
+    // 3. Combine and take top 4
+    return [...pinned, ...others].slice(0, 4);
   }, [products]);
 
   if (loading && products.length === 0) {
