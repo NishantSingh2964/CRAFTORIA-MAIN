@@ -69,8 +69,15 @@ app.use('/api/expenses', require('./routes/expenseRoutes'));
 app.use('/api/wishlist', require('./routes/wishlistRoutes'));
 app.use('/api/cart', require('./routes/cartRoutes'));
 
+// Catch-all 404 handler
+app.use((req, res, next) => {
+    console.warn(`[404] Route Not Found: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ success: false, message: `Route ${req.method} ${req.originalUrl} not found` });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
+    console.error(`[500] Error on ${req.method} ${req.originalUrl}:`, err);
     const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
     res.status(statusCode).json({
         message: err.message,

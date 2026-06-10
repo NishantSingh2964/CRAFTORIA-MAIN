@@ -20,7 +20,7 @@ const cartItemSchema = new mongoose.Schema({
     // Useful for personalized items if they have extra metadata
     metadata: {
         type: Map,
-        of: String
+        of: mongoose.Schema.Types.Mixed
     }
 });
 

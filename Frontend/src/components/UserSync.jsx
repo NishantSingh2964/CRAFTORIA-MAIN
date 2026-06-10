@@ -15,9 +15,6 @@ const UserSync = () => {
     const syncUser = async () => {
       // Only sync if signed in and sync hasn't run in this session
       if (isLoaded && isSignedIn && user && !sessionStorage.getItem('userSynced')) {
-        // Mark as synced immediately to prevent concurrent loops during the async fetch
-        sessionStorage.setItem('userSynced', 'true');
-
         try {
           // Log token for Postman testing
           const token = await getToken();
@@ -36,11 +33,16 @@ const UserSync = () => {
 
           if (response.ok) {
             console.log('User synced to MongoDB successfully');
+            // Only set once confirmed
+            sessionStorage.setItem('userSynced', 'true');
           } else {
             console.warn('User sync returned non-ok status:', response.status);
+            // Don't set true so it can retry
+            sessionStorage.removeItem('userSynced');
           }
         } catch (err) {
           console.error('Error syncing user to database:', err);
+          sessionStorage.removeItem('userSynced');
         }
       }
     };

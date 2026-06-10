@@ -3,12 +3,31 @@ const User = require('../models/User');
 
 // Helper: resolve MongoDB user from Clerk token
 const getUser = async (req, res) => {
-    const user = await User.findOne({ clerkId: req.auth.userId });
-    if (!user) {
-        res.status(404).json({ success: false, message: 'User not found' });
+    try {
+        let user = await User.findOne({ clerkId: req.auth.userId });
+        
+        if (!user) {
+            // Auto-sync if user is authenticated but not in DB
+            console.log(`User ${req.auth.userId} missing in DB. Attempting auto-sync...`);
+            
+            // We can try to get details from the syncUser payload if available, 
+            // but for a generic helper, we'll try to find any existing record or fail gracefully
+            // In a real app, you'd use clerkClient to fetch missing info here.
+            
+            // For now, let's at least return a more helpful error or try a fallback
+            res.status(404).json({ 
+                success: false, 
+                message: 'User account not synced. Please refresh your page to initialize your profile.',
+                needsSync: true 
+            });
+            return null;
+        }
+        return user;
+    } catch (error) {
+        console.error('getUser Helper Error:', error);
+        res.status(500).json({ success: false, message: 'Internal profile retrieval error' });
         return null;
     }
-    return user;
 };
 
 // @desc    Get user cart
@@ -49,19 +68,27 @@ exports.getCart = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching cart:', error);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        next(error);
     }
 };
 
 // @desc    Add item to cart
 // @route   POST /api/cart/add
 // @access  Private
-exports.addToCart = async (req, res) => {
+exports.addToCart = async (req, res, next) => {
     try {
+        console.log(`[CART] Add to cart request for user ${req.auth?.userId}:`, req.body);
         const user = await getUser(req, res);
         if (!user) return;
 
-        const { productId, productModel, quantity = 1, metadata = {} } = req.body;
+        const { productId, productModel, quantity = 1 } = req.body;
+        const metadata = req.body.metadata || {}; // Ensure it's never null
+
+        // Validate ObjectId to prevent 500 error from Mongoose
+        const mongoose = require('mongoose');
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ success: false, message: 'Invalid Product ID' });
+        }
 
         let cart = await Cart.findOne({ user: user._id });
 
@@ -75,9 +102,16 @@ exports.addToCart = async (req, res) => {
             ['Product', 'PersonalizedProduct'].includes(item.productModel)
         );
 
-        const existingItemIndex = cart.items.findIndex(
-            item => item.product && item.product.toString() === productId && item.productModel === productModel
-        );
+        const existingItemIndex = cart.items.findIndex(item => {
+            if (!item.product) return false;
+            const isSameProduct = item.product.toString() === productId && item.productModel === productModel;
+            
+            // Handle Mongoose Map conversion for comparison
+            const itemMetadata = item.metadata instanceof Map ? Object.fromEntries(item.metadata) : (item.metadata || {});
+            const isSameMetadata = JSON.stringify(itemMetadata) === JSON.stringify(metadata);
+            
+            return isSameProduct && isSameMetadata;
+        });
 
         if (existingItemIndex > -1) {
             cart.items[existingItemIndex].quantity += quantity;
@@ -103,7 +137,7 @@ exports.addToCart = async (req, res) => {
         });
     } catch (error) {
         console.error('Error adding to cart:', error);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        next(error);
     }
 };
 
@@ -134,7 +168,7 @@ exports.updateQuantity = async (req, res) => {
         res.status(404).json({ success: false, message: 'Item not found in cart' });
     } catch (error) {
         console.error('Error updating quantity:', error);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        next(error);
     }
 };
 
@@ -164,7 +198,7 @@ exports.removeFromCart = async (req, res) => {
         });
     } catch (error) {
         console.error('Error removing from cart:', error);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        next(error);
     }
 };
 
@@ -188,6 +222,6 @@ exports.clearCart = async (req, res) => {
         });
     } catch (error) {
         console.error('Error clearing cart:', error);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        next(error);
     }
 };

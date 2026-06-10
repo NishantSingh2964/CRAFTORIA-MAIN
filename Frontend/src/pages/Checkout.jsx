@@ -293,7 +293,7 @@ const Checkout = () => {
         quantity: item.quantity,
         price: Number(item.currentPrice),
         image: item.image,
-        customization: item.customization || null
+        customization: item.metadata || item.customization || null
       })),
       totalAmount: orderTotal,
       deliveryInfo: {

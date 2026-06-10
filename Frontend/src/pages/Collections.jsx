@@ -4,6 +4,8 @@ import { useProducts } from '../contexts/ProductContext';
 import { useOccasions } from '../contexts/OccasionContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { Pencil, Image as ImageIcon } from 'lucide-react';
+import PersonalizationModal from '../components/Personalized/PersonalizationModal';
+import { useCart } from '../contexts/CartContext';
 import hero3 from '../assets/home/hero3.png?w=1400&format=webp&quality=82';
 
 const categoriesList = [
@@ -79,6 +81,9 @@ const Collections = () => {
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const { addToCart } = useCart();
+  const [isPersonalizing, setIsPersonalizing] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const getNumericPrice = (price) => parseInt(String(price).replace(/[^\d]/g, ''), 10) || 0;
 

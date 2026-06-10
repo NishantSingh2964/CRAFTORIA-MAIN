@@ -189,11 +189,12 @@ const OurStory = () => {
         {/* Detailed Brand Story & Founder Section */}
         <section className="py-20 sm:py-28 border-t border-red-50 bg-[#fffcfb]">
           <div className="max-w-[1320px] mx-auto px-5 sm:px-10 lg:px-12">
-            
+
             {/* Part 1: The Vision */}
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start mb-12 sm:mb-24">
               <div>
-                <h2 className="font-serif text-3xl sm:text-4xl md:text-[2.65rem] font-bold text-gray-950 mb-10 tracking-tight leading-[1.1]">
+                <span className="section-eyebrow">Our Essence</span>
+                <h2 className="font-serif text-3xl sm:text-4xl md:text-[2.65rem] font-bold tracking-tight leading-tight text-gray-950 mb-5">
                   A Story of <span className="text-[#760000]">Passion & Perfection</span>
                 </h2>
                 <div className="space-y-7 font-sans text-base sm:text-[17.5px] leading-[1.85] text-gray-700">
@@ -227,7 +228,7 @@ const OurStory = () => {
             <div className="relative mb-24">
               <div className="absolute top-0 left-0 right-0 h-[1px] bg-red-100/30 flex items-center justify-center">
                 <div className="bg-[#fffcfb] px-10">
-                   <div className="h-1.5 w-1.5 rounded-full bg-red-200" />
+                  <div className="h-1.5 w-1.5 rounded-full bg-red-200" />
                 </div>
               </div>
 
@@ -244,7 +245,7 @@ const OurStory = () => {
                   <span className="text-xs font-black uppercase tracking-[0.4em] text-[#760000] mb-5 block">The Soul of the Brand</span>
                   <h3 className="font-serif text-4xl font-bold text-gray-950 mb-2">Nishant Raj</h3>
                   <p className="font-sans text-gray-400 font-bold text-xs uppercase tracking-widest mb-10">Founder & Visionary</p>
-                  
+
                   <div className="space-y-7 font-sans text-[15px] sm:text-base leading-[1.9] text-gray-600">
                     <p className="italic">
                       "The idea for CRAFTORIA was born out of a desire to make gift-giving more meaningful and beautiful. I was inspired after receiving a gift combo that wasn’t quite perfect from someone special. Instead of being disappointed, I saw an opportunity to take the concept to the next level."
@@ -259,36 +260,36 @@ const OurStory = () => {
 
             {/* Part 3: The Timeline */}
             <div className="max-w-4xl mx-auto">
-               <div className="grid md:grid-cols-2 gap-12 border-b border-red-50 pb-20 mb-20">
-                  <div className="p-8 rounded-2xl bg-white shadow-sm border border-red-50/50">
-                    <span className="text-[#760000] font-black text-2xl mb-4 block">2019</span>
-                    <h4 className="font-serif text-xl font-bold text-gray-950 mb-4 tracking-tight">Digital Inception</h4>
-                    <p className="font-sans text-[14px] leading-relaxed text-gray-500">
-                      Starting with an Instagram page in December 2019, CRAFTORIA quickly gained popularity among people who appreciated the craftsmanship and creativity that went into each hamper. Word-of-mouth spread our vision rapidly.
-                    </p>
-                  </div>
-                  <div className="p-8 rounded-2xl bg-white shadow-sm border border-red-50/50">
-                    <span className="text-[#760000] font-black text-2xl mb-4 block">2021</span>
-                    <h4 className="font-serif text-xl font-bold text-gray-950 mb-4 tracking-tight">The Modern Era</h4>
-                    <p className="font-sans text-[14px] leading-relaxed text-gray-500">
-                      In 2021, we transitioned into our dedicated digital storefront. Today, we are proud to be delivering thousands of beautiful gift hampers to customers all over India and worldwide, turning every ordinary day into an experience.
-                    </p>
-                  </div>
-               </div>
+              <div className="grid md:grid-cols-2 gap-12 border-b border-red-50 pb-20 mb-20">
+                <div className="p-8 rounded-2xl bg-white shadow-sm border border-red-50/50">
+                  <span className="text-[#760000] font-black text-2xl mb-4 block">2019</span>
+                  <h4 className="font-serif text-xl font-bold text-gray-950 mb-4 tracking-tight">Digital Inception</h4>
+                  <p className="font-sans text-[14px] leading-relaxed text-gray-500">
+                    Starting with an Instagram page in December 2019, CRAFTORIA quickly gained popularity among people who appreciated the craftsmanship and creativity that went into each hamper. Word-of-mouth spread our vision rapidly.
+                  </p>
+                </div>
+                <div className="p-8 rounded-2xl bg-white shadow-sm border border-red-50/50">
+                  <span className="text-[#760000] font-black text-2xl mb-4 block">2021</span>
+                  <h4 className="font-serif text-xl font-bold text-gray-950 mb-4 tracking-tight">The Modern Era</h4>
+                  <p className="font-sans text-[14px] leading-relaxed text-gray-500">
+                    In 2021, we transitioned into our dedicated digital storefront. Today, we are proud to be delivering thousands of beautiful gift hampers to customers all over India and worldwide, turning every ordinary day into an experience.
+                  </p>
+                </div>
+              </div>
 
-               <div className="text-center px-8 py-10 rounded-[2.5rem] bg-[#171111] text-white shadow-2xl relative overflow-hidden">
-                 <div className="absolute inset-0 bg-gradient-to-br from-[#760000]/20 to-transparent opacity-50" />
-                 <div className="relative z-10">
-                   <h2 className="font-serif text-2xl sm:text-3xl font-bold mb-4">Our Eternal Promise</h2>
-                   <p className="font-sans text-base sm:text-lg leading-relaxed text-gray-300 max-w-2xl mx-auto mb-8 font-light">
-                     "At CRAFTORIA, we believe that every gift should be an experience that creates lasting memories. Our goal is to make gift-giving a joyous and stress-free journey for you. Thank you for choosing us."
-                   </p>
-                   <Link to="/collections" className="inline-flex items-center gap-4 bg-white text-[#171111] px-8 py-3.5 rounded-full font-bold hover:bg-red-50 transition-all shadow-xl hover:shadow-white/10">
-                      Explore Our Story<span className="hidden sm:inline"> in Gifts</span>
-                      <Icon><path d="m9 18 6-6-6-6"/></Icon>
-                   </Link>
-                 </div>
-               </div>
+              <div className="text-center px-8 py-10 rounded-[2.5rem] bg-[#171111] text-white shadow-2xl relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#760000]/20 to-transparent opacity-50" />
+                <div className="relative z-10">
+                  <h2 className="font-serif text-2xl sm:text-3xl font-bold mb-4">Our Eternal Promise</h2>
+                  <p className="font-sans text-base sm:text-lg leading-relaxed text-gray-300 max-w-2xl mx-auto mb-8 font-light">
+                    "At CRAFTORIA, we believe that every gift should be an experience that creates lasting memories. Our goal is to make gift-giving a joyous and stress-free journey for you. Thank you for choosing us."
+                  </p>
+                  <Link to="/collections" className="inline-flex items-center gap-2 bg-white text-[#171111] px-7 py-3 rounded-full font-bold hover:bg-red-50 transition-all shadow-xl hover:shadow-white/10">
+                    Explore <span className="hidden sm:inline">Our </span>Collections
+                    <Icon><path d="m9 18 6-6-6-6" /></Icon>
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </section>

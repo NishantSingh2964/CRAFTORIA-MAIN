@@ -66,8 +66,7 @@ const PersonalizationModal = ({
 
     onConfirm({
       text,
-      photo,
-      photoPreview,
+      photo: photoPreview,
     });
 
     onClose();

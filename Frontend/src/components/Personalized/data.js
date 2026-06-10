@@ -7,7 +7,7 @@ import watches from '../../assets/home/watches.png?w=480&format=webp&quality=78'
 
 export const basketProducts = [
   {
-    id: 'teddy',
+    id: '64f1a2b3c4d5e6f7a8b9c001',
     name: 'Teddy Bear',
     price: 899,
     weight: 0.45,
@@ -16,7 +16,7 @@ export const basketProducts = [
     emoji: '🧸',
   },
   {
-    id: 'chocolates',
+    id: '64f1a2b3c4d5e6f7a8b9c002',
     name: 'Chocolates',
     price: 1499,
     weight: 0.35,
@@ -25,7 +25,7 @@ export const basketProducts = [
     emoji: '🍫',
   },
   {
-    id: 'roses',
+    id: '64f1a2b3c4d5e6f7a8b9c003',
     name: 'Red Roses',
     price: 1299,
     weight: 0.55,
@@ -34,7 +34,7 @@ export const basketProducts = [
     emoji: '🌹',
   },
   {
-    id: 'balloon',
+    id: '64f1a2b3c4d5e6f7a8b9c004',
     name: 'Birthday Balloon',
     price: 799,
     weight: 0.1,
@@ -43,7 +43,7 @@ export const basketProducts = [
     emoji: '🎈',
   },
   {
-    id: 'candle',
+    id: '64f1a2b3c4d5e6f7a8b9c005',
     name: 'Scented Candle',
     price: 699,
     weight: 0.4,
@@ -52,7 +52,7 @@ export const basketProducts = [
     emoji: '🕯️',
   },
   {
-    id: 'watches',
+    id: '64f1a2b3c4d5e6f7a8b9c006',
     name: 'Mens Watch',
     price: 699,
     weight: 0.4,

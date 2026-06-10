@@ -663,18 +663,18 @@ const ProductDetail = () => {
         onClose={() => setIsPersonalizing(false)}
         product={product}
         onConfirm={(details) => {
-          const isActuallyPersonalized = details.text || details.photoPreview;
+          const isActuallyPersonalized = details.text || details.photo;
           const finalProduct = isActuallyPersonalized ? {
             ...product,
             currentPrice: Number(product.currentPrice) + 200,
             customization: {
               text: details.text,
-              photo: details.photoPreview,
+              photo: details.photo,
               fee: 200
             }
           } : product;
 
-          addToCart(finalProduct, quantity);
+          addToCart(product, quantity, finalProduct.customization);
         }}
       />
     </div>

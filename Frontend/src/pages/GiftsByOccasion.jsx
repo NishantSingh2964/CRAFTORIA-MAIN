@@ -7,6 +7,7 @@ import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { formatPrice } from '../utils/formatPrice';
 import { Heart, ShoppingBag, Pencil, Image as ImageIcon } from 'lucide-react';
+import PersonalizationModal from '../components/Personalized/PersonalizationModal';
 import toast from 'react-hot-toast';
 
 const GiftsByOccasion = () => {
@@ -19,6 +20,8 @@ const GiftsByOccasion = () => {
   const [selectedFinderRecipient, setSelectedFinderRecipient] = useState('Partner');
   const [revealedMatch, setRevealedMatch] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [isPersonalizing, setIsPersonalizing] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   // Set initial occasion when loaded
   React.useEffect(() => {

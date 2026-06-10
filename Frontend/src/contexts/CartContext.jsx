@@ -45,7 +45,7 @@ const CartManager = ({ children }) => {
     fetchCart();
   }, [isSignedIn, isLoaded]);
 
-  const addToCart = useCallback(async (product, quantity = 1) => {
+  const addToCart = useCallback(async (product, quantity = 1, metadata = null) => {
     if (!isSignedIn) {
       toast.error('Please login to add items to your cart', {
         icon: '🔒',
@@ -65,7 +65,8 @@ const CartManager = ({ children }) => {
       const response = await api.post('/cart/add', {
         productId,
         productModel,
-        quantity
+        quantity,
+        metadata
       });
 
       if (response.data.success) {
@@ -92,8 +93,9 @@ const CartManager = ({ children }) => {
         }
       }
     } catch (error) {
-      toast.error('Failed to add item to cart');
-      console.error(error);
+      const errorMsg = error.response?.data?.message || 'Failed to add item to cart';
+      toast.error(errorMsg);
+      console.error('Add to Cart Error:', error.response?.data || error);
     }
   }, [isSignedIn]);
 

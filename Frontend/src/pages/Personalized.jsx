@@ -162,7 +162,8 @@ const Personalized = () => {
     
     try {
       for (const item of selectedItems) {
-        await addToCart(item, item.quantity);
+        // Pass the personalization to every item in the basket
+        await addToCart(item, item.quantity, personalization);
       }
       
       toast.success('Hamper added to cart! 🎁');
