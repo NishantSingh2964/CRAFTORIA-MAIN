@@ -43,7 +43,8 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), (req, res, n
 const allowedOrigins = [
     process.env.FRONTEND_URL,                 // e.g. https://craaftoria.vercel.app
     process.env.FRONTEND_URL_PREVIEW,         // optional: secondary fixed preview URL
-    /^https:\/\/craaftoria.*\.vercel\.app$/,  // all Vercel branch previews for this project
+    /^https:\/\/craaftoria.*\.vercel\.app$/,  // all Vercel branch previews for this project starting with craaftoria
+    /^https:\/\/.*-nishant-rajs-projects.*\.vercel\.app$/, // specific pattern seen in the logs
     /^http:\/\/localhost(:\d+)?$/,            // local development
 ].filter(Boolean); // remove undefined entries
 
@@ -51,10 +52,15 @@ app.use(cors({
     origin: (origin, callback) => {
         // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
         if (!origin) return callback(null, true);
-        const allowed = allowedOrigins.some(o =>
-            o instanceof RegExp ? o.test(origin) : o === origin
-        );
-        if (allowed) {
+        
+        const isAllowed = allowedOrigins.some(o => {
+            if (o instanceof RegExp) {
+                return o.test(origin);
+            }
+            return o === origin;
+        });
+
+        if (isAllowed) {
             callback(null, true);
         } else {
             console.warn(`[CORS] Blocked origin: ${origin}`);
@@ -63,7 +69,8 @@ app.use(cors({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Set-Cookie']
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
