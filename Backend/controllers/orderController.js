@@ -129,9 +129,18 @@ exports.createCheckoutSession = async (req, res, next) => {
 exports.getMyOrders = async (req, res, next) => {
     try {
         const userId = req.user?._id.toString();
+        const userEmail = req.user?.email;
+
         if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
         
-        const orders = await Order.find({ userId }).sort('-createdAt');
+        // Search by userId OR customerEmail to bridge the gap between Clerk IDs and MongoDB IDs
+        const orders = await Order.find({
+            $or: [
+                { userId: userId },
+                { customerEmail: userEmail }
+            ]
+        }).sort('-createdAt');
+
         res.status(200).json({ success: true, count: orders.length, data: orders });
     } catch (error) {
         next(error);
@@ -201,9 +210,9 @@ exports.downloadInvoice = async (req, res, next) => {
         const order = await Order.findById(req.params.id);
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
         
-        // Ensure user owns the order
-        if (order.userId !== req.user._id.toString()) {
-            return res.status(403).json({ success: false, message: 'Not authorized' });
+        // Ensure user owns the order (Check by ID or Email for legacy compatibility)
+        if (order.userId !== req.user._id.toString() && order.customerEmail !== req.user.email) {
+            return res.status(403).json({ success: false, message: 'Not authorized to access this invoice' });
         }
 
         let pdfUrl = order.invoiceUrl;
@@ -258,7 +267,7 @@ exports.markPaymentPending = async (req, res, next) => {
     try {
         const order = await Order.findById(req.params.id);
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-        if (order.userId !== req.user._id.toString()) {
+        if (order.userId !== req.user._id.toString() && order.customerEmail !== req.user.email) {
             return res.status(403).json({ success: false, message: 'Not authorized' });
         }
         // If already paid, do nothing — edge case where payment succeeded after user clicked back
@@ -292,7 +301,7 @@ exports.retryPayment = async (req, res, next) => {
     try {
         const order = await Order.findById(req.params.id);
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-        if (order.userId !== req.user._id.toString()) {
+        if (order.userId !== req.user._id.toString() && order.customerEmail !== req.user.email) {
             return res.status(403).json({ success: false, message: 'Not authorized' });
         }
         if (order.paymentStatus === 'Paid') {
@@ -346,7 +355,7 @@ exports.cancelOrder = async (req, res, next) => {
         const order = await Order.findById(req.params.id);
 
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-        if (order.userId !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+        if (order.userId !== req.user._id.toString() && order.customerEmail !== req.user.email) return res.status(403).json({ success: false, message: 'Not authorized' });
 
         // Check if cancellable (Only if status is Processing)
         if (order.status !== 'Processing') {
@@ -456,7 +465,7 @@ exports.withdrawCancellationRequest = async (req, res, next) => {
         const order = await Order.findById(req.params.id);
 
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-        if (order.userId !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
+        if (order.userId !== req.user._id.toString() && order.customerEmail !== req.user.email) return res.status(403).json({ success: false, message: 'Not authorized' });
 
         if (order.status !== 'Cancellation Requested') {
             return res.status(400).json({ success: false, message: 'Order is not in Cancellation Requested state' });

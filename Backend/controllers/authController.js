@@ -14,10 +14,11 @@ const sendToken = (user, statusCode, res) => {
     });
 
     const options = {
-        expires: new Date(Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + (process.env.COOKIE_EXPIRE || 30) * 24 * 60 * 60 * 1000),
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+        // Always use secure and sameSite: none on Vercel to allow cross-site cookies
+        secure: true, 
+        sameSite: 'none' 
     };
 
     res.status(statusCode).cookie('token', token, options).json({
@@ -41,7 +42,7 @@ exports.forgotPassword = async (req, res, next) => {
         }
 
         if (user.authProvider !== 'local') {
-            return res.status(400).json({ success: false, message: 'This account uses social login' });
+            return res.status(400).json({ success: false, message: 'This account uses social login, Please try to login through google.' });
         }
 
         // Generate Code (6 digits)
@@ -286,7 +287,7 @@ exports.getMe = async (req, res, next) => {
 exports.deleteAccount = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id);
-        
+
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
