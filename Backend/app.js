@@ -39,8 +39,28 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), (req, res, n
 }, handleStripeWebhook);
 
 // Middleware
+// Build a dynamic allowlist: main URL + any Vercel preview branch URL + localhost
+const allowedOrigins = [
+    process.env.FRONTEND_URL,                 // e.g. https://craaftoria.vercel.app
+    process.env.FRONTEND_URL_PREVIEW,         // optional: secondary fixed preview URL
+    /^https:\/\/craaftoria.*\.vercel\.app$/,  // all Vercel branch previews for this project
+    /^http:\/\/localhost(:\d+)?$/,            // local development
+].filter(Boolean); // remove undefined entries
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL || '*',
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
+        if (!origin) return callback(null, true);
+        const allowed = allowedOrigins.some(o =>
+            o instanceof RegExp ? o.test(origin) : o === origin
+        );
+        if (allowed) {
+            callback(null, true);
+        } else {
+            console.warn(`[CORS] Blocked origin: ${origin}`);
+            callback(new Error(`CORS policy: origin '${origin}' is not allowed`));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
