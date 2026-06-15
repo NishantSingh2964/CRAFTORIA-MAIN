@@ -1,11 +1,9 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
-import { useClerkMount } from '../providers/LazyClerk';
-import { Heart } from 'lucide-react';
-
-const NavbarClerkAuth = lazy(() => import('./NavbarClerkAuth'));
+import { useAuth } from '../contexts/AuthContext';
+import { Heart, User, LogOut, LayoutDashboard } from 'lucide-react';
 
 const LOGO_TOP = '/logo-nav.webp';
 const LOGO_SCROLLED = '/logo-nav-alt.webp';
@@ -24,14 +22,17 @@ const loginButtonBase =
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { clerkReady, ensureClerk } = useClerkMount();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { user, logout, isAuthenticated, isAdmin } = useAuth();
   const { cartItems } = useCart();
   const { wishlist } = useWishlist();
-  const [autoSignIn, setAutoSignIn] = useState(false);
+  const navigate = useNavigate();
 
-  const handleLoginClick = () => {
-    setAutoSignIn(true);
-    void ensureClerk();
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+    setIsProfileOpen(false);
+    setIsMenuOpen(false);
   };
 
   useEffect(() => {
@@ -97,7 +98,6 @@ const Navbar = () => {
               alt="CRAFTORIA"
               width={128}
               height={52}
-              decoding="async"
               className={`block h-auto object-contain object-left transition-opacity duration-300 ${isScrolled ? 'w-32 sm:w-44 md:w-56 max-h-14' : 'w-24 sm:w-32'
                 }`}
             />
@@ -138,18 +138,65 @@ const Navbar = () => {
 
             <div className={`h-6 w-px ${isScrolled ? 'bg-white/30' : 'bg-gray-400'}`}></div>
 
-            {clerkReady ? (
-              <Suspense fallback={null}>
-                <NavbarClerkAuth
-                  loginButtonClass={loginButtonClass}
-                  autoSignIn={autoSignIn}
-                  onAutoSignInDone={() => setAutoSignIn(false)}
-                />
-              </Suspense>
+            {isAuthenticated ? (
+              <div className="relative">
+                <button 
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-2 focus:outline-none"
+                >
+                  <div className={`h-9 w-9 rounded-full border-2 flex items-center justify-center overflow-hidden ${isScrolled ? 'border-white/50' : 'border-[#760000]/20'}`}>
+                    {user.avatar ? (
+                      <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className={`h-full w-full flex items-center justify-center font-bold text-sm ${isScrolled ? 'bg-white text-[#760000]' : 'bg-[#760000] text-white'}`}>
+                        {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                    )}
+                  </div>
+                </button>
+                
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                    <Link 
+                      to="/profile" 
+                      onClick={() => setIsProfileOpen(false)}
+                      className="block px-4 py-2 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
+                      <p className="text-sm font-semibold text-gray-900 truncate">{user.name || 'User'}</p>
+                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                    </Link>
+                    
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        <LayoutDashboard size={16} /> Admin Dashboard
+                      </Link>
+                    )}
+                    
+                    <Link
+                      to="/my-orders"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <BagIcon className="w-4 h-4" /> My Orders
+                    </Link>
+                    
+                    <button
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[#760000] hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut size={16} /> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
-              <button type="button" onClick={handleLoginClick} className={loginButtonClass}>
+              <Link to="/login" className={loginButtonClass}>
                 Login
-              </button>
+              </Link>
             )}
           </div>
 
@@ -203,7 +250,7 @@ const Navbar = () => {
       <div
         id="mobile-menu"
         className={`lg:hidden overflow-hidden transition-all duration-300 border-t ${isScrolled ? 'bg-[#760000] border-[#5e0000]' : 'bg-white/95 backdrop-blur-md border-gray-100'
-          } ${isMenuOpen ? 'max-h-96 opacity-100 shadow-xl' : 'max-h-0 opacity-0'}`}
+          } ${isMenuOpen ? 'max-h-[80vh] opacity-100 shadow-xl overflow-y-auto' : 'max-h-0 opacity-0'}`}
       >
         <div className="px-4 pt-2 pb-6 space-y-1">
           {navLinks.map((link) => (
@@ -227,29 +274,54 @@ const Navbar = () => {
           ))}
 
           <div
-            className={`flex items-center justify-center gap-4 pt-4 border-t mt-2 ${isScrolled ? 'border-white/20' : 'border-gray-200'
+            className={`flex flex-col items-center gap-4 pt-4 border-t mt-2 ${isScrolled ? 'border-white/20' : 'border-gray-200'
               }`}
           >
-            {clerkReady ? (
-              <Suspense fallback={null}>
-                <NavbarClerkAuth
-                  loginButtonClass={loginButtonClass}
-                  onMobileLogin={() => setIsMenuOpen(false)}
-                  autoSignIn={autoSignIn}
-                  onAutoSignInDone={() => setAutoSignIn(false)}
-                />
-              </Suspense>
+            {isAuthenticated ? (
+              <div className="w-full space-y-2">
+                <div className={`flex items-center gap-3 px-4 py-3 rounded-lg ${isScrolled ? 'bg-white/10 text-white' : 'bg-gray-50 text-gray-900'}`}>
+                  <div className="h-8 w-8 rounded-full bg-[#760000] flex items-center justify-center overflow-hidden">
+                    {user.avatar ? <img src={user.avatar} alt="avatar" /> : <User size={16} className="text-white" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold truncate">{user.name || 'User'}</p>
+                    <p className="text-[10px] opacity-70 truncate">{user.email}</p>
+                  </div>
+                </div>
+                
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`block w-full text-center py-3 text-xs font-bold uppercase tracking-wider rounded-lg ${isScrolled ? 'bg-white text-[#760000]' : 'bg-[#760000] text-white'}`}
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
+                
+                <Link
+                  to="/my-orders"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`block w-full text-center py-3 text-xs font-bold uppercase tracking-wider rounded-lg border ${isScrolled ? 'border-white text-white' : 'border-[#760000] text-[#760000]'}`}
+                >
+                  My Orders
+                </Link>
+                
+                <button
+                  onClick={handleLogout}
+                  className={`block w-full text-center py-3 text-xs font-bold uppercase tracking-wider rounded-lg border border-transparent ${isScrolled ? 'text-red-200 hover:text-red-100' : 'text-[#760000] hover:bg-red-50'}`}
+                >
+                  Logout
+                </button>
+              </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  handleLoginClick();
-                  setIsMenuOpen(false);
-                }}
+              <Link
+                to="/login"
+                onClick={() => setIsMenuOpen(false)}
                 className={loginButtonClass}
               >
                 Login
-              </button>
+              </Link>
             )}
           </div>
         </div>

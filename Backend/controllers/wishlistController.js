@@ -4,12 +4,10 @@ const User = require('../models/User');
 // @desc    Get user wishlist
 // @route   GET /api/wishlist
 // @access  Private
-exports.getWishlist = async (req, res) => {
+exports.getWishlist = async (req, res, next) => {
     try {
-        const user = await User.findOne({ clerkId: req.auth.userId });
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
+        const user = req.user;
+        if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
         const wishlist = await Wishlist.find({ user: user._id }).populate('product');
 
@@ -26,7 +24,7 @@ exports.getWishlist = async (req, res) => {
 // @desc    Toggle product in wishlist
 // @route   POST /api/wishlist/toggle
 // @access  Private
-exports.toggleWishlist = async (req, res) => {
+exports.toggleWishlist = async (req, res, next) => {
     try {
         const { productId, productModel } = req.body;
 
@@ -34,10 +32,8 @@ exports.toggleWishlist = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Please provide productId and productModel' });
         }
 
-        const user = await User.findOne({ clerkId: req.auth.userId });
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
+        const user = req.user;
+        if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
         const existingItem = await Wishlist.findOne({
             user: user._id,
@@ -71,12 +67,10 @@ exports.toggleWishlist = async (req, res) => {
 // @desc    Check if product is in wishlist
 // @route   GET /api/wishlist/check/:productId
 // @access  Private
-exports.checkWishlist = async (req, res) => {
+exports.checkWishlist = async (req, res, next) => {
     try {
-        const user = await User.findOne({ clerkId: req.auth.userId });
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
+        const user = req.user;
+        if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
         const isInWishlist = await Wishlist.exists({
             user: user._id,

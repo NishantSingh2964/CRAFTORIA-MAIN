@@ -5,9 +5,7 @@ import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import { Toaster } from 'react-hot-toast';
 import SubscribeModal from '../components/SubscribeModal';
-import UserSync from '../components/UserSync';
 import Chatbot from '../components/Chatbot';
-import { useClerkMount } from '../providers/LazyClerk';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -20,7 +18,8 @@ const ScrollToTop = () => {
 };
 
 const Layout = () => {
-  const { clerkReady } = useClerkMount();
+  const location = useLocation();
+  const isAuthPage = ['/login', '/register', '/forgot-password'].includes(location.pathname);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fafafa]">
@@ -28,21 +27,20 @@ const Layout = () => {
         Skip to content
       </a>
       <ScrollToTop />
-      {clerkReady && <UserSync />}
       <SEO />
 
       {/* Sticky/Fixed Navbar */}
-      <Navbar />
+      {!isAuthPage && <Navbar />}
       <Toaster toastOptions={{ ariaProps: { role: 'status', 'aria-live': 'polite' } }} />
       <SubscribeModal />
-      <Chatbot />
+      {!isAuthPage && <Chatbot />}
 
       <main id="main-content" className="flex-grow" tabIndex={-1}>
         <Outlet />
       </main>
 
       {/* Shared Footer */}
-      <Footer />
+      {!isAuthPage && <Footer />}
     </div>
   );
 };

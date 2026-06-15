@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 
 const OrderContext = createContext();
@@ -10,7 +10,7 @@ export const OrderProvider = ({ children }) => {
     const [error, setError] = useState(null);
 
     // User: Fetch personal orders
-    const fetchMyOrders = async () => {
+    const fetchMyOrders = useCallback(async () => {
         try {
             setLoading(true);
             const response = await api.get('/orders/my-orders');
@@ -21,10 +21,10 @@ export const OrderProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     // Admin: Fetch all orders
-    const fetchAllOrders = async () => {
+    const fetchAllOrders = useCallback(async () => {
         try {
             setLoading(true);
             const response = await api.get('/orders/admin');
@@ -35,9 +35,9 @@ export const OrderProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const updateOrderStatus = async (orderId, status) => {
+    const updateOrderStatus = useCallback(async (orderId, status) => {
         try {
             const response = await api.patch(`/orders/admin/${orderId}`, { status });
             setAdminOrders(prev => prev.map(o => o._id === orderId ? response.data.data : o));
@@ -45,9 +45,9 @@ export const OrderProvider = ({ children }) => {
         } catch (err) {
             return { success: false, error: err.response?.data?.message || 'Failed to update status' };
         }
-    };
+    }, []);
 
-    const createOrder = async (orderData) => {
+    const createOrder = useCallback(async (orderData) => {
         try {
             setLoading(true);
             const response = await api.post('/orders', orderData);
@@ -58,9 +58,9 @@ export const OrderProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const createStripeSession = async (items, deliveryInfo, customerEmail) => {
+    const createStripeSession = useCallback(async (items, deliveryInfo, customerEmail) => {
         try {
             setLoading(true);
             const response = await api.post('/orders/create-checkout-session', { items, deliveryInfo, customerEmail });
@@ -70,12 +70,9 @@ export const OrderProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    // Alias for compatibility with existing code
-    const addOrder = (orderData) => createOrder(orderData);
-
-    const deleteOrder = async (orderId) => {
+    const deleteOrder = useCallback(async (orderId) => {
         try {
             await api.delete(`/orders/admin/${orderId}`);
             setAdminOrders(prev => prev.filter(o => o._id !== orderId));
@@ -83,9 +80,9 @@ export const OrderProvider = ({ children }) => {
         } catch (err) {
             return { success: false, error: err.response?.data?.message || 'Failed to delete order' };
         }
-    };
+    }, []);
 
-    const cancelOrder = async (orderId) => {
+    const cancelOrder = useCallback(async (orderId) => {
         try {
             const response = await api.post(`/orders/${orderId}/cancel`);
             // Refresh personal orders to reflect cancellation
@@ -94,7 +91,7 @@ export const OrderProvider = ({ children }) => {
         } catch (err) {
             return { success: false, error: err.response?.data?.message || 'Failed to cancel order' };
         }
-    };
+    }, [fetchMyOrders]);
 
     const value = {
         orders,
@@ -105,7 +102,7 @@ export const OrderProvider = ({ children }) => {
         fetchAllOrders,
         updateOrderStatus,
         createOrder,
-        addOrder,
+        addOrder: createOrder,
         createStripeSession,
         deleteOrder,
         cancelOrder

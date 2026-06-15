@@ -1,23 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 import api from '../services/api';
-import { useClerkMount } from '../providers/LazyClerk';
 
 const WishlistContext = createContext();
 
-/**
- * Inner component that is ONLY rendered once Clerk is guaranteed to be loaded.
- * This allows us to safely use useAuth().
- */
-const WishlistManager = ({ children, setWishlist, wishlist, setLoading, loading }) => {
-  const { isSignedIn, isLoaded } = useAuth();
+export const WishlistProvider = ({ children }) => {
+  const [wishlist, setWishlist] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
   // Fetch wishlist from backend when user logs in
   useEffect(() => {
     const fetchWishlist = async () => {
-      // If Clerk is not loaded or user not signed in, reset local wishlist
-      if (!isLoaded || !isSignedIn) {
+      if (authLoading || !isAuthenticated) {
         setWishlist([]); 
         return;
       }
@@ -26,10 +22,12 @@ const WishlistManager = ({ children, setWishlist, wishlist, setLoading, loading 
       try {
         const response = await api.get('/wishlist');
         if (response.data.success) {
-          const flattenedWishlist = response.data.data.map(item => ({
-            ...item.product,
-            productModel: item.productModel
-          }));
+          const flattenedWishlist = response.data.data
+            .filter(item => item && item.product) 
+            .map(item => ({
+              ...item.product,
+              productModel: item.productModel
+            }));
           setWishlist(flattenedWishlist);
         }
       } catch (error) {
@@ -40,10 +38,10 @@ const WishlistManager = ({ children, setWishlist, wishlist, setLoading, loading 
     };
 
     fetchWishlist();
-  }, [isSignedIn, isLoaded]);
+  }, [isAuthenticated, authLoading]);
 
   const toggleWishlist = async (product, explicitModel = null) => {
-    if (!isSignedIn) {
+    if (!isAuthenticated) {
       toast.error('Please login to add items to your wishlist', {
         icon: '🔒',
         duration: 3000
@@ -77,7 +75,7 @@ const WishlistManager = ({ children, setWishlist, wishlist, setLoading, loading 
   };
 
   const removeFromWishlist = async (productId) => {
-    if (!isSignedIn) return;
+    if (!isAuthenticated) return;
     try {
       const product = wishlist.find(item => (item._id || item.id) === productId);
       if (product) await toggleWishlist(product);
@@ -90,54 +88,20 @@ const WishlistManager = ({ children, setWishlist, wishlist, setLoading, loading 
     return wishlist.some((item) => (item._id || item.id) === productId);
   };
 
+  const value = {
+    wishlist,
+    toggleWishlist,
+    removeFromWishlist,
+    isInWishlist,
+    loading,
+    isAuthenticated,
+    isLoaded: !authLoading
+  };
+
   return (
-    <WishlistContext.Provider value={{ wishlist, toggleWishlist, removeFromWishlist, isInWishlist, loading, isSignedIn: !!isSignedIn, clerkReady: true }}>
+    <WishlistContext.Provider value={value}>
       {children}
     </WishlistContext.Provider>
-  );
-};
-
-/**
- * Public Provider that handles the LazyClerk loading state.
- */
-export const WishlistProvider = ({ children }) => {
-  const [wishlist, setWishlist] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const { clerkReady } = useClerkMount();
-
-  // If Clerk isn't ready yet, we provide a placeholder context 
-  // that prevents crashes but allows guest UI to render.
-  if (!clerkReady) {
-    const guestValue = {
-      wishlist: [],
-      toggleWishlist: () => {
-        toast.error('Please login to use wishlist', { icon: '🔒' });
-      },
-      removeFromWishlist: () => {},
-      isInWishlist: () => false,
-      loading: false,
-      isSignedIn: false,
-      clerkReady: false
-    };
-
-    return (
-      <WishlistContext.Provider value={guestValue}>
-        {children}
-      </WishlistContext.Provider>
-    );
-  }
-
-  // Once Clerk is ready, we render the WishlistManager 
-  // which can safely use Clerk hooks.
-  return (
-    <WishlistManager 
-      setWishlist={setWishlist} 
-      wishlist={wishlist} 
-      setLoading={setLoading} 
-      loading={loading}
-    >
-      {children}
-    </WishlistManager>
   );
 };
 

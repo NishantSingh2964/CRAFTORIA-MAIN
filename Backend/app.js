@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
@@ -38,13 +39,41 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), (req, res, n
 }, handleStripeWebhook);
 
 // Middleware
+// Build a dynamic allowlist: main URL + any Vercel preview branch URL + localhost
+const allowedOrigins = [
+    process.env.FRONTEND_URL,                 // e.g. https://craaftoria.vercel.app
+    process.env.FRONTEND_URL_PREVIEW,         // optional: secondary fixed preview URL
+    /^https:\/\/craaftoria.*\.vercel\.app$/,  // all Vercel branch previews for this project starting with craaftoria
+    /^https:\/\/.*-nishant-rajs-projects.*\.vercel\.app$/, // specific pattern seen in the logs
+    /^http:\/\/localhost(:\d+)?$/,            // local development
+].filter(Boolean); // remove undefined entries
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL || '*',
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
+        if (!origin) return callback(null, true);
+        
+        const isAllowed = allowedOrigins.some(o => {
+            if (o instanceof RegExp) {
+                return o.test(origin);
+            }
+            return o === origin;
+        });
+
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            console.warn(`[CORS] Blocked origin: ${origin}`);
+            callback(new Error(`CORS policy: origin '${origin}' is not allowed`));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Set-Cookie']
 }));
 app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
 app.use(helmet());
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
@@ -56,6 +85,7 @@ app.get('/', (req, res) => {
 });
 
 // Routes
+app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/occasions', require('./routes/occasionRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));

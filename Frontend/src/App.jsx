@@ -11,10 +11,10 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { ReviewProvider } from './contexts/ReviewContext';
 import { WishlistProvider } from './contexts/WishlistContext';
 import Loader from './components/Loader';
-import { LazyClerkProvider } from './providers/LazyClerk';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { AuthProvider } from './contexts/AuthContext';
 
-const clerkPubKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '32887196098-t9q8h8ror3g2pm5k0d8n48oicgch7nt0.apps.googleusercontent.com';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
@@ -32,6 +32,10 @@ const MyOrders = lazy(() => import('./pages/MyOrders'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
 const StoryDetail = lazy(() => import('./pages/StoryDetail'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const Profile = lazy(() => import('./pages/Profile'));
 
 // Admin Pages
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
@@ -60,72 +64,78 @@ const App = () => {
     <>
       {showLoader && <Loader onFinish={() => setShowLoader(false)} />}
       <Router>
-        <LazyClerkProvider publishableKey={clerkPubKey}>
-          <ProductProvider>
-            <PersonalizedProvider>
-            <OccasionProvider>
-              <OrderProvider>
-                <CartProvider>
-                  <NotificationProvider>
-                    <WishlistProvider>
-                    <ReviewProvider>
-                      <Suspense fallback={<PageFallback />}>
-                        <Routes>
-                          {/* Public Frontend Routes */}
-                          <Route path="/" element={<Layout />}>
-                            <Route index element={<Home />} />
-                            <Route path="collections" element={<Collections />} />
-                            <Route path="gifts-by-occasion" element={<GiftsByOccasion />} />
-                            <Route path="personalized" element={<Personalized />} />
-                            <Route path="story/:id" element={<StoryDetail />} />
-                            <Route path="our-story" element={<OurStory />} />
-                            <Route path="product/:id" element={<ProductDetail />} />
-                            <Route path="cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-                            <Route path="checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-                            <Route path="success" element={<ProtectedRoute><Success /></ProtectedRoute>} />
-                            <Route path="my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
-                            <Route path="wishlist" element={<Wishlist />} />
-                            <Route path="*" element={<NotFound />} />
-                          </Route>
+        <GoogleOAuthProvider clientId={googleClientId}>
+          <AuthProvider>
+            <ProductProvider>
+              <PersonalizedProvider>
+              <OccasionProvider>
+                <OrderProvider>
+                  <CartProvider>
+                    <NotificationProvider>
+                      <WishlistProvider>
+                      <ReviewProvider>
+                        <Suspense fallback={<PageFallback />}>
+                          <Routes>
+                            {/* Public Frontend Routes */}
+                            <Route path="/" element={<Layout />}>
+                              <Route index element={<Home />} />
+                              <Route path="collections" element={<Collections />} />
+                              <Route path="gifts-by-occasion" element={<GiftsByOccasion />} />
+                              <Route path="personalized" element={<Personalized />} />
+                              <Route path="story/:id" element={<StoryDetail />} />
+                              <Route path="our-story" element={<OurStory />} />
+                              <Route path="product/:id" element={<ProductDetail />} />
+                              <Route path="login" element={<Login />} />
+                              <Route path="register" element={<Register />} />
+                              <Route path="forgot-password" element={<ForgotPassword />} />
+                              <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                              <Route path="cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+                              <Route path="checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                              <Route path="success" element={<ProtectedRoute><Success /></ProtectedRoute>} />
+                              <Route path="my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+                              <Route path="wishlist" element={<Wishlist />} />
+                              <Route path="*" element={<NotFound />} />
+                            </Route>
 
-                          {/* Admin Routes */}
-                          <Route path="/admin" element={
-                            <AdminRoute>
-                              <AdminProvider>
-                                <AdminLayout />
-                              </AdminProvider>
-                            </AdminRoute>
-                          }>
-                            <Route index element={<Navigate to="/admin/dashboard" replace />} />
-                            <Route path="dashboard" element={<AdminDashboard />} />
-                            <Route path="products" element={<AdminProducts />} />
-                            <Route path="products/add" element={<AdminAddProduct />} />
-                            <Route path="products/edit/:id" element={<AdminEditProduct />} />
-                            <Route path="orders" element={<AdminOrders />} />
-                            <Route path="users" element={<AdminUsers />} />
-                            <Route path="expenses" element={<AdminExpenses />} />
-                            <Route path="occasions" element={<AdminOccasions />} />
-                            <Route path="occasions/add" element={<AdminAddOccasion />} />
-                            <Route path="occasions/edit/:id" element={<AdminEditOccasion />} />
-                            <Route path="notifications" element={<AdminNotifications />} />
-                            <Route path="personalized-products" element={<AdminPersonalizedProducts />} />
-                            <Route path="personalized-products/add" element={<AdminAddPersonalizedProduct />} />
-                            <Route path="personalized-products/edit/:id" element={<AdminEditPersonalizedProduct />} />
-                            <Route path="cancellation-requests" element={<AdminCancellationRequests />} />
-                          </Route>
+                            {/* Admin Routes */}
+                            <Route path="/admin" element={
+                              <AdminRoute>
+                                <AdminProvider>
+                                  <AdminLayout />
+                                </AdminProvider>
+                              </AdminRoute>
+                            }>
+                              <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                              <Route path="dashboard" element={<AdminDashboard />} />
+                              <Route path="products" element={<AdminProducts />} />
+                              <Route path="products/add" element={<AdminAddProduct />} />
+                              <Route path="products/edit/:id" element={<AdminEditProduct />} />
+                              <Route path="orders" element={<AdminOrders />} />
+                              <Route path="users" element={<AdminUsers />} />
+                              <Route path="expenses" element={<AdminExpenses />} />
+                              <Route path="occasions" element={<AdminOccasions />} />
+                              <Route path="occasions/add" element={<AdminAddOccasion />} />
+                              <Route path="occasions/edit/:id" element={<AdminEditOccasion />} />
+                              <Route path="notifications" element={<AdminNotifications />} />
+                              <Route path="personalized-products" element={<AdminPersonalizedProducts />} />
+                              <Route path="personalized-products/add" element={<AdminAddPersonalizedProduct />} />
+                              <Route path="personalized-products/edit/:id" element={<AdminEditPersonalizedProduct />} />
+                              <Route path="cancellation-requests" element={<AdminCancellationRequests />} />
+                            </Route>
 
 
-                        </Routes>
-                      </Suspense>
-                    </ReviewProvider>
-                    </WishlistProvider>
-                  </NotificationProvider>
-                </CartProvider>
-              </OrderProvider>
-            </OccasionProvider>
-            </PersonalizedProvider>
-          </ProductProvider>
-        </LazyClerkProvider>
+                          </Routes>
+                        </Suspense>
+                      </ReviewProvider>
+                      </WishlistProvider>
+                    </NotificationProvider>
+                  </CartProvider>
+                </OrderProvider>
+              </OccasionProvider>
+              </PersonalizedProvider>
+            </ProductProvider>
+          </AuthProvider>
+        </GoogleOAuthProvider>
       </Router>
     </>
   );

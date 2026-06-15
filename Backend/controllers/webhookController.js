@@ -3,7 +3,6 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Notification = require('../models/Notification');
 const Cart = require('../models/Cart');
-const User = require('../models/User');
 
 // @desc    Handle Stripe Webhook
 // @route   POST /api/webhook
@@ -66,14 +65,11 @@ exports.handleStripeWebhook = async (req, res) => {
 
             // ✅ Clear user's cart after successful payment
             try {
-                const user = await User.findOne({ clerkId: metadata.userId });
-                if (user) {
-                    await Cart.findOneAndUpdate(
-                        { user: user._id },
-                        { $set: { items: [] } }
-                    );
-                    console.log(`🛒 Cart cleared for user ${metadata.userId}.`);
-                }
+                await Cart.findOneAndUpdate(
+                    { user: metadata.userId },
+                    { $set: { items: [] } }
+                );
+                console.log(`🛒 Cart cleared for user ${metadata.userId}.`);
             } catch (cartErr) {
                 console.error('Failed to clear cart after payment:', cartErr.message);
             }

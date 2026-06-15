@@ -37,7 +37,7 @@ const normalizeProduct = (product) => ({
 });
 
 const Wishlist = () => {
-  const { wishlist, removeFromWishlist, loading, isSignedIn, clerkReady } = useWishlist();
+  const { wishlist, removeFromWishlist, loading, isAuthenticated, isLoaded } = useWishlist();
   const { addToCart } = useCart();
   const [sortBy, setSortBy] = useState('recent');
 
@@ -59,8 +59,8 @@ const Wishlist = () => {
     addToCart(normalizeProduct(product));
   };
 
-  // Show a spinner while Clerk is still loading (prevents flash of 'Login Required' for authenticated users)
-  if (!clerkReady || (loading && wishlist.length === 0)) {
+  // Show a spinner while Auth is still loading (prevents flash of 'Login Required' for authenticated users)
+  if (!isLoaded || (loading && wishlist.length === 0)) {
     return (
       <div className="flex min-h-screen items-center justify-center pt-20">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#760000] border-t-transparent"></div>
@@ -126,7 +126,7 @@ const Wishlist = () => {
       </section>
 
       <section className="site-container py-8 sm:py-10">
-        {!isSignedIn ? (
+        {!isAuthenticated ? (
           <div className="flex min-h-[360px] flex-col items-center justify-center rounded-xl border border-red-100 bg-[#fff9f8] p-8 text-center shadow-sm sm:p-14">
             <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#760000] shadow-sm">
               <Heart className="h-8 w-8" />
@@ -136,7 +136,7 @@ const Wishlist = () => {
               Please login to view and manage your curated wishlist.
             </p>
             <Link
-              to="/checkout" // Borrowing the checkout route logic or just using a link to trigger login
+              to="/login?redirect=/wishlist"
               className="mt-8 inline-flex items-center gap-2 rounded-md border-2 border-[#760000] bg-[#760000] px-8 py-3.5 action-link text-white transition hover:bg-red-800"
             >
               Login to CRAFTORIA

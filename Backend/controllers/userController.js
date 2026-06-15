@@ -53,8 +53,7 @@ exports.syncUser = async (req, res, next) => {
 
 exports.getProfile = async (req, res, next) => {
     try {
-        const clerkId = req.auth?.userId || req.headers['clerk-id'] || req.query.clerkId;
-        const user = await User.findOne({ clerkId });
+        const user = req.user;
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
         res.status(200).json({
