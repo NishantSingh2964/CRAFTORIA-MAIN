@@ -33,9 +33,23 @@ exports.getCart = async (req, res, next) => {
             cart = await Cart.create({ user: user._id, items: [] });
         }
 
+        // Map items to include overrides
+        const finalItems = (cart.items || []).map(item => {
+            const productData = item.product ? (item.product.toObject ? item.product.toObject() : item.product) : {};
+            return {
+                ...productData,
+                _id: item.product?._id || item.product,
+                name: item.name || productData.name,
+                currentPrice: item.price || productData.currentPrice || productData.price,
+                quantity: item.quantity,
+                productModel: item.productModel,
+                metadata: item.metadata
+            };
+        });
+
         res.status(200).json({
             success: true,
-            data: cart.items
+            data: finalItems
         });
     } catch (error) {
         console.error('Error fetching cart:', error);
@@ -52,7 +66,7 @@ exports.addToCart = async (req, res, next) => {
         const user = req.user;
         if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
-        const { productId, productModel, quantity = 1 } = req.body;
+        const { productId, productModel, quantity = 1, name, price } = req.body;
         const metadata = req.body.metadata || {}; // Ensure it's never null
 
         // Validate ObjectId to prevent 500 error from Mongoose
@@ -91,7 +105,9 @@ exports.addToCart = async (req, res, next) => {
                 product: productId,
                 productModel,
                 quantity,
-                metadata
+                metadata,
+                name,
+                price
             });
         }
 
@@ -102,9 +118,23 @@ exports.addToCart = async (req, res, next) => {
             select: 'name image price currentPrice originalPrice sku tag'
         });
 
+        // Map items to include overrides
+        const finalItems = cart.items.map(item => {
+            const productData = item.product ? (item.product.toObject ? item.product.toObject() : item.product) : {};
+            return {
+                ...productData,
+                _id: item.product?._id || item.product, // Keep the product ID
+                name: item.name || productData.name,
+                currentPrice: item.price || productData.currentPrice || productData.price,
+                quantity: item.quantity,
+                productModel: item.productModel,
+                metadata: item.metadata
+            };
+        });
+
         res.status(200).json({
             success: true,
-            data: cart.items
+            data: finalItems
         });
     } catch (error) {
         console.error('Error adding to cart:', error);

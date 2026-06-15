@@ -1,5 +1,6 @@
 const Review = require('../models/Review');
 const Product = require('../models/Product');
+const PersonalizedProduct = require('../models/PersonalizedProduct');
 
 // @desc    Create a new review
 // @route   POST /api/reviews
@@ -7,13 +8,17 @@ const Product = require('../models/Product');
 exports.createReview = async (req, res, next) => {
     try {
         const { productId, rating, comment, userName, userImage } = req.body;
-        if (!req.auth || !req.auth.userId) {
-            return res.status(401).json({ success: false, message: 'User authentication failed' });
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ success: false, message: 'Please login to post a review' });
         }
-        const userId = req.auth.userId;
+        const userId = req.user.id;
 
-        // Check if product exists
-        const product = await Product.findById(productId);
+        // Check if product exists in any of the two collections
+        let product = await Product.findById(productId);
+        if (!product) {
+            product = await PersonalizedProduct.findById(productId);
+        }
+
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }

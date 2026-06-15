@@ -606,7 +606,7 @@ const ProductDetail = () => {
               ) : (
                 <div className="text-center py-6">
                   <p className="text-gray-600 mb-6 font-sans">Please sign in to share your experience.</p>
-                  <Link to="/login?redirect=/product/${id}" className="inline-block px-8 py-3 bg-[#760000] text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-red-800 transition shadow-lg">
+                  <Link to={`/login?redirect=/product/${id}`} className="inline-block px-8 py-3 bg-[#760000] text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-red-800 transition shadow-lg">
                     Sign In to Review
                   </Link>
                 </div>

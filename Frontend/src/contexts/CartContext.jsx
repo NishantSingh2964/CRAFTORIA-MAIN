@@ -25,14 +25,7 @@ export const CartProvider = ({ children }) => {
       try {
         const response = await api.get('/cart');
         if (response.data.success) {
-          // The backend returns populated product objects in 'items.product'
-          const flattenedCart = response.data.data.map(item => ({
-            ...item.product,
-            quantity: item.quantity,
-            productModel: item.productModel,
-            metadata: item.metadata
-          }));
-          setCartItems(flattenedCart);
+          setCartItems(response.data.data);
         }
       } catch (error) {
         console.error('Failed to fetch cart:', error);
@@ -65,17 +58,13 @@ export const CartProvider = ({ children }) => {
         productId,
         productModel,
         quantity,
-        metadata
+        metadata,
+        name: product.name,
+        price: product.price
       });
 
       if (response.data.success) {
-        const flattenedCart = response.data.data.map(item => ({
-          ...item.product,
-          quantity: item.quantity,
-          productModel: item.productModel,
-          metadata: item.metadata
-        }));
-        setCartItems(flattenedCart);
+        setCartItems(response.data.data);
 
         if (alreadyInCart) {
           toast(`${product.name} is already in cart — quantity updated!`, {
@@ -104,13 +93,7 @@ export const CartProvider = ({ children }) => {
     try {
       const response = await api.delete(`/cart/remove/${productId}`);
       if (response.data.success) {
-        const flattenedCart = response.data.data.map(item => ({
-          ...item.product,
-          quantity: item.quantity,
-          productModel: item.productModel,
-          metadata: item.metadata
-        }));
-        setCartItems(flattenedCart);
+        setCartItems(response.data.data);
         toast.success('Item removed from cart');
       }
     } catch (error) {
@@ -130,13 +113,7 @@ export const CartProvider = ({ children }) => {
       });
 
       if (response.data.success) {
-        const flattenedCart = response.data.data.map(item => ({
-          ...item.product,
-          quantity: item.quantity,
-          productModel: item.productModel,
-          metadata: item.metadata
-        }));
-        setCartItems(flattenedCart);
+        setCartItems(response.data.data);
       }
     } catch (error) {
       console.error('Failed to update quantity:', error);

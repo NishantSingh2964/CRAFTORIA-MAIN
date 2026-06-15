@@ -101,6 +101,19 @@ const OrderDetailsModal = ({ order, onClose }) => {
                         {item.customization.fee && (
                           <p className="text-xs font-black text-[#8d0000]">✨ Customization Fee: +{fmt(item.customization.fee)}</p>
                         )}
+                        {item.customization.isHamper && item.customization.items && (
+                          <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-2">
+                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8d0000]">Hamper Items</p>
+                             <div className="grid gap-2">
+                               {item.customization.items.map((sub, sIdx) => (
+                                 <div key={sIdx} className="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-50">
+                                   <span className="text-xs font-bold text-[#171111]">• {sub.name}</span>
+                                   <span className="text-[10px] font-black text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">x{sub.quantity}</span>
+                                 </div>
+                               ))}
+                             </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

@@ -17,6 +17,9 @@ const cartItemSchema = new mongoose.Schema({
         default: 1,
         min: 1
     },
+    // Overrides for bundled items (like hampers)
+    name: String,
+    price: Number,
     // Useful for personalized items if they have extra metadata
     metadata: {
         type: Map,
