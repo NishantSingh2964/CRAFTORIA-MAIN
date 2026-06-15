@@ -376,13 +376,18 @@ const MyOrders = () => {
                                 Ordered on {formatOrderDate(order.createdAt)}
                               </p>
                               <h3 className="mb-2 line-clamp-2 font-serif text-base font-bold leading-tight text-gray-900 sm:text-lg">
-                                {primary?.name}
-                                {items.length > 1 && (
-                                  <span className="font-sans text-sm font-normal text-gray-500">
-                                    {' '}
-                                    +{items.length - 1} more
-                                  </span>
-                                )}
+                                  {primary?.name}
+                                  {primary?.customization?.isHamper && (
+                                    <span className="block text-[10px] uppercase tracking-widest text-[#760000] font-bold mt-1">
+                                      ✨ {primary?.customization?.totalItems || primary?.customization?.items?.length} Items Hamper
+                                    </span>
+                                  )}
+                                  {items.length > 1 && (
+                                    <span className="font-sans text-sm font-normal text-gray-500">
+                                      {' '}
+                                      +{items.length - 1} more
+                                    </span>
+                                  )}
                               </h3>
                               <p className="mb-3 font-sans text-sm text-gray-600">
                                 Qty: {primary?.quantity || 1}{' '}

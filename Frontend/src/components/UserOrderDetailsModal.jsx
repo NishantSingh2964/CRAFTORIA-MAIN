@@ -106,6 +106,19 @@ const UserOrderDetailsModal = ({ order, onClose }) => {
                         "{item.customization.text}"
                       </p>
                     )}
+                    {item.customization?.isHamper && item.customization?.items && (
+                      <div className="mt-2 space-y-1.5">
+                        <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest px-1">Gifts in this Hamper:</p>
+                        <ul className="bg-white/60 p-2.5 rounded-lg border border-red-50 space-y-1">
+                          {item.customization.items.map((sub, sIdx) => (
+                            <li key={sIdx} className="text-[10px] text-gray-600 flex justify-between items-center group">
+                              <span>• {sub.name}</span>
+                              <span className="text-gray-400 font-mono text-[9px] bg-gray-50 px-1.5 rounded">x{sub.quantity}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                   <p className="font-bold text-sm text-gray-900">{fmt(item.price * item.quantity)}</p>
                 </div>

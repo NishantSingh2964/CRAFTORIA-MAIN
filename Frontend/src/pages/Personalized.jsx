@@ -156,22 +156,44 @@ const Personalized = () => {
     setIsPersonalizingBasket(true);
   };
 
-  // Called after personalization modal confirms (with or without personalization)
+  // Called after personalization modal confirms
   const handleAddBasketToCart = async (personalization = {}) => {
     if (selectedItems.length === 0) return false;
     
     try {
-      for (const item of selectedItems) {
-        // Pass the personalization to every item in the basket
-        await addToCart(item, item.quantity, personalization);
-      }
+      // 1. Bundle all items into one "Hamper" product
+      const totalHamperPrice = selectedItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+      const firstItem = selectedItems[0];
+
+      const hamperDetails = {
+        name: 'Personalized Gift Hamper',
+        id: firstItem.id, // Use first item as base ID
+        price: totalHamperPrice,
+        image: aiGeneratedImages[0] || firstItem.image,
+        productModel: 'PersonalizedProduct'
+      };
+
+      // 2. Add the list of all items as metadata
+      const hamperMetadata = {
+          ...personalization,
+          isHamper: true,
+          items: selectedItems.map(item => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price
+          })),
+          totalItems: itemCount
+      };
+
+      await addToCart(hamperDetails, 1, hamperMetadata);
       
-      toast.success('Hamper added to cart! 🎁');
+      toast.success('Your custom hamper has been added to cart! 🎁');
       setBasketItems([]);
+      setAiGeneratedImages([]);
       return true;
     } catch (error) {
       console.error('Failed to add basket to cart:', error);
-      toast.error('Failed to add some items');
+      toast.error('Failed to craft your hamper');
       return false;
     }
   };

@@ -37,8 +37,8 @@ const orderSchema = new mongoose.Schema({
             type: String
         },
         customization: {
-            text: String,
-            photo: String
+            type: mongoose.Schema.Types.Mixed, // Supports text, photo, OR a list of hamper items
+            default: null
         }
     }],
     totalAmount: {

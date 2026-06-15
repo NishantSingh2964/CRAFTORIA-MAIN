@@ -204,6 +204,19 @@ const Cart = () => {
                           <h3 className="font-serif font-semibold text-[15px] text-gray-900 leading-snug mb-1.5 line-clamp-2">
                             {item.name}
                           </h3>
+                          {item.metadata?.isHamper && item.metadata?.items && (
+                            <div className="mb-3 p-3 bg-red-50/50 rounded-lg border border-red-100/50">
+                                <p className="text-[10px] font-bold text-[#760000] uppercase tracking-wider mb-2">Hamper Contents:</p>
+                                <ul className="space-y-1">
+                                    {item.metadata.items.map((subItem, idx) => (
+                                        <li key={idx} className="text-[11px] text-gray-600 flex justify-between">
+                                            <span>• {subItem.name}</span>
+                                            <span className="text-gray-400">x{subItem.quantity}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                          )}
                           <span className="inline-block text-[11px] font-semibold text-emerald-600 mb-2">
                             In Stock
                           </span>
