@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useUser, useClerk } from '@clerk/clerk-react';
+import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useOrders } from '../contexts/OrderContext';
 import OrderSummary from '../components/OrderSummary';
@@ -149,8 +149,7 @@ const matchIndianState = (state = '') =>
   INDIAN_STATES.find((item) => item.toLowerCase() === String(state).toLowerCase()) || state;
 
 const Checkout = () => {
-  const { isLoaded, isSignedIn, user } = useUser();
-  const { openSignIn } = useClerk();
+  const { isAuthenticated, loading: authLoading, user } = useAuth();
   const { cartItems, clearCart } = useCart();
   const { createOrder, createStripeSession } = useOrders();
   const navigate = useNavigate();
@@ -161,15 +160,16 @@ const Checkout = () => {
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
-    if (!isLoaded || isSignedIn) return;
-    toast.error('Please sign in to checkout');
-    openSignIn({ redirectUrl: `${window.location.origin}/checkout` });
-    navigate('/', { replace: true });
-  }, [isLoaded, isSignedIn, navigate, openSignIn]);
+    if (authLoading) return;
+    if (!isAuthenticated) {
+        toast.error('Please sign in to checkout');
+        navigate('/login?redirect=/checkout', { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
   const orderTotal = useMemo(
     () =>
-      cartItems.reduce((sum, item) => sum + parsePrice(item.currentPrice) * item.quantity, 0),
+      cartItems.reduce((sum, item) => sum + parsePrice(item.currentPrice || item.price) * item.quantity, 0),
     [cartItems]
   );
 
@@ -202,10 +202,7 @@ const Checkout = () => {
 
           setForm((prev) => ({
             ...prev,
-            fullName:
-              prev.fullName ||
-              user?.fullName ||
-              [user?.firstName, user?.lastName].filter(Boolean).join(' '),
+            fullName: prev.fullName || user?.name || '',
             address: streetAddress || fallbackAddress,
             landmark:
               prev.landmark ||
@@ -288,10 +285,10 @@ const Checkout = () => {
     const orderData = {
       orderNumber: `GT${String(orderId).slice(-5)}`,
       items: cartItems.map(item => ({
-        productId: item._id,
+        productId: item._id || item.id,
         name: item.name,
         quantity: item.quantity,
-        price: Number(item.currentPrice),
+        price: Number(item.currentPrice || item.price),
         image: item.image,
         customization: item.metadata || item.customization || null
       })),
@@ -306,7 +303,7 @@ const Checkout = () => {
       }
     };
 
-    const customerEmail = user?.primaryEmailAddress?.emailAddress;
+    const customerEmail = user?.email;
     const res = await createStripeSession(orderData.items, orderData.deliveryInfo, customerEmail);
 
     if (res.success && res.url) {
@@ -324,7 +321,7 @@ const Checkout = () => {
     }
   };
 
-  if (!isLoaded) {
+  if (authLoading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center bg-[#fafafa]">
         <p className="font-sans text-gray-500 text-sm">Loading checkout...</p>
@@ -332,7 +329,7 @@ const Checkout = () => {
     );
   }
 
-  if (!isSignedIn) return null;
+  if (!isAuthenticated) return null;
 
   if (cartItems.length === 0 && !orderPlaced && !sessionStorage.getItem('lastOrderPlaced')) {
     navigate('/cart');

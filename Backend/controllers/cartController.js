@@ -1,42 +1,13 @@
 const Cart = require('../models/Cart');
 const User = require('../models/User');
 
-// Helper: resolve MongoDB user from Clerk token
-const getUser = async (req, res) => {
-    try {
-        let user = await User.findOne({ clerkId: req.auth.userId });
-        
-        if (!user) {
-            // Auto-sync if user is authenticated but not in DB
-            console.log(`User ${req.auth.userId} missing in DB. Attempting auto-sync...`);
-            
-            // We can try to get details from the syncUser payload if available, 
-            // but for a generic helper, we'll try to find any existing record or fail gracefully
-            // In a real app, you'd use clerkClient to fetch missing info here.
-            
-            // For now, let's at least return a more helpful error or try a fallback
-            res.status(404).json({ 
-                success: false, 
-                message: 'User account not synced. Please refresh your page to initialize your profile.',
-                needsSync: true 
-            });
-            return null;
-        }
-        return user;
-    } catch (error) {
-        console.error('getUser Helper Error:', error);
-        res.status(500).json({ success: false, message: 'Internal profile retrieval error' });
-        return null;
-    }
-};
-
 // @desc    Get user cart
 // @route   GET /api/cart
 // @access  Private
-exports.getCart = async (req, res) => {
+exports.getCart = async (req, res, next) => {
     try {
-        const user = await getUser(req, res);
-        if (!user) return;
+        const user = req.user;
+        if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
         let cart = await Cart.findOne({ user: user._id });
 
@@ -77,9 +48,9 @@ exports.getCart = async (req, res) => {
 // @access  Private
 exports.addToCart = async (req, res, next) => {
     try {
-        console.log(`[CART] Add to cart request for user ${req.auth?.userId}:`, req.body);
-        const user = await getUser(req, res);
-        if (!user) return;
+        console.log(`[CART] Add to cart request for user ${req.user?._id}:`, req.body);
+        const user = req.user;
+        if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
         const { productId, productModel, quantity = 1 } = req.body;
         const metadata = req.body.metadata || {}; // Ensure it's never null
@@ -144,10 +115,10 @@ exports.addToCart = async (req, res, next) => {
 // @desc    Update cart item quantity
 // @route   PUT /api/cart/update
 // @access  Private
-exports.updateQuantity = async (req, res) => {
+exports.updateQuantity = async (req, res, next) => {
     try {
-        const user = await getUser(req, res);
-        if (!user) return;
+        const user = req.user;
+        if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
         const { productId, quantity } = req.body;
 
@@ -175,10 +146,10 @@ exports.updateQuantity = async (req, res) => {
 // @desc    Remove item from cart
 // @route   DELETE /api/cart/remove/:productId
 // @access  Private
-exports.removeFromCart = async (req, res) => {
+exports.removeFromCart = async (req, res, next) => {
     try {
-        const user = await getUser(req, res);
-        if (!user) return;
+        const user = req.user;
+        if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
         const { productId } = req.params;
 
@@ -205,10 +176,10 @@ exports.removeFromCart = async (req, res) => {
 // @desc    Clear entire cart
 // @route   DELETE /api/cart/clear
 // @access  Private
-exports.clearCart = async (req, res) => {
+exports.clearCart = async (req, res, next) => {
     try {
-        const user = await getUser(req, res);
-        if (!user) return;
+        const user = req.user;
+        if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
         const cart = await Cart.findOne({ user: user._id });
         if (cart) {

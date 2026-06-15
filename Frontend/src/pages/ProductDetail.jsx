@@ -6,7 +6,7 @@ import { usePersonalized } from '../contexts/PersonalizedContext';
 import { useCart } from '../contexts/CartContext';
 import { useReviews } from '../contexts/ReviewContext';
 import { useWishlist } from '../contexts/WishlistContext';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { formatPrice } from '../utils/formatPrice';
 import { compressImage } from '../utils/imageCompressor';
@@ -57,7 +57,7 @@ const ProductDetail = () => {
   const { fetchPersonalizedProductById } = usePersonalized();
   const { addToCart, cartItems } = useCart();
   const { reviews, fetchReviewsByProduct, submitReview, deleteReview, loading: reviewsLoading } = useReviews();
-  const { user, isSignedIn } = useUser();
+  const { user, isAuthenticated: isSignedIn } = useAuth();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [product, setProduct] = useState(null);
@@ -78,7 +78,7 @@ const ProductDetail = () => {
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isAdmin = user?.publicMetadata?.role === 'Admin' || user?.publicMetadata?.role === 'SuperAdmin' || user?.publicMetadata?.role === 'admin';
+  const isAdmin = user?.role === 'Admin' || user?.role === 'SuperAdmin';
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -143,8 +143,8 @@ const ProductDetail = () => {
       productId: id,
       rating,
       comment,
-      userName: user.fullName || user.firstName || 'Anonymous',
-      userImage: user.imageUrl
+      userName: user.name || 'Anonymous',
+      userImage: user.avatar
     });
     if (result.success) {
       setComment('');
@@ -606,7 +606,7 @@ const ProductDetail = () => {
               ) : (
                 <div className="text-center py-6">
                   <p className="text-gray-600 mb-6 font-sans">Please sign in to share your experience.</p>
-                  <Link to="/checkout" className="inline-block px-8 py-3 bg-[#760000] text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-red-800 transition shadow-lg">
+                  <Link to="/login?redirect=/product/${id}" className="inline-block px-8 py-3 bg-[#760000] text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-red-800 transition shadow-lg">
                     Sign In to Review
                   </Link>
                 </div>

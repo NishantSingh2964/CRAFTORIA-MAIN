@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useUser, useClerk } from '@clerk/clerk-react';
+import { useAuth } from '../contexts/AuthContext';
 import { useOrders } from '../contexts/OrderContext';
 import { formatPrice } from '../utils/formatPrice';
 import api from '../services/api';
@@ -91,8 +91,7 @@ const trustItems = [
 ];
 
 const MyOrders = () => {
-  const { isLoaded, isSignedIn } = useUser();
-  const { openSignIn } = useClerk();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { orders, fetchMyOrders, cancelOrder, loading: ordersLoading } = useOrders();
@@ -140,20 +139,18 @@ const MyOrders = () => {
   };
 
   useEffect(() => {
-    if (!isLoaded) return;
-    if (isSignedIn) {
-        fetchMyOrders();
+    if (authLoading) return;
+    if (!isAuthenticated) {
+        toast.error('Please login to view your orders');
+        navigate('/login?redirect=/my-orders', { replace: true });
         return;
     }
-    if (!isSignedIn) {
-        openSignIn({ redirectUrl: `${window.location.origin}/my-orders` });
-        navigate('/', { replace: true });
-    }
-  }, [fetchMyOrders, isLoaded, isSignedIn, navigate, openSignIn]);
+    fetchMyOrders();
+  }, [fetchMyOrders, authLoading, isAuthenticated, navigate]);
 
   // Handle return from Stripe: ?payment=cancelled&orderId=X  or  ?retry=X
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
+    if (authLoading || !isAuthenticated) return;
 
     const payment = searchParams.get('payment');
     const orderId = searchParams.get('orderId');
@@ -201,7 +198,7 @@ const MyOrders = () => {
       })();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, isSignedIn]);
+  }, [authLoading, isAuthenticated]);
 
   const handleCompletePayment = useCallback(async (orderId) => {
     try {
@@ -267,7 +264,7 @@ const MyOrders = () => {
     }
   };
 
-  if ((!isLoaded || !isSignedIn) || (ordersLoading && orders.length === 0)) {
+  if (authLoading || (ordersLoading && orders.length === 0)) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center bg-[#fafafa]">
         <p className="font-sans text-gray-500 text-sm animate-pulse">Loading your orders...</p>
@@ -316,6 +313,7 @@ const MyOrders = () => {
                 </div>
                 <div className="flex w-full items-center justify-between gap-3 pb-4 sm:w-auto sm:justify-start sm:pb-5">
                   <span className="shrink-0 font-sans text-xs text-gray-500">Sort by:</span>
+                  <span className="sr-only">Sort orders by date</span>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}

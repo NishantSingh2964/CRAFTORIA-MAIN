@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Bell, CalendarDays, Menu, Search, UserRound, AlertCircle } from 'lucide-react';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import AdminSidebar from './AdminSidebar';
 import { useNotifications } from '../../contexts/NotificationContext';
@@ -9,7 +9,7 @@ import { useOrders } from '../../contexts/OrderContext';
 import { Link } from 'react-router-dom';
 
 const AdminLayout = () => {
-  const { user } = useUser();
+  const { user } = useAuth();
   const { unreadCount, fetchNotifications } = useNotifications();
   const { adminOrders, fetchAllOrders } = useOrders();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
@@ -27,7 +27,6 @@ const AdminLayout = () => {
 
   return (
     <div className="min-h-screen bg-[#fffaf7] text-[#201514]">
-      <Toaster />
       <Toaster />
       <AdminSidebar isCollapsed={isCollapsed} />
 
@@ -78,8 +77,8 @@ const AdminLayout = () => {
               )}
             </Link>
             <button className="grid h-11 w-11 place-items-center overflow-hidden rounded-full bg-[#f7e9e2] text-[#201514]" aria-label="Admin profile">
-              {user?.imageUrl ? (
-                <img src={user.imageUrl} alt={user?.fullName || 'Admin'} className="h-full w-full object-cover" />
+              {user?.avatar ? (
+                <img src={user.avatar} alt={user?.name || 'Admin'} className="h-full w-full object-cover" />
               ) : (
                 <UserRound className="h-5 w-5" />
               )}

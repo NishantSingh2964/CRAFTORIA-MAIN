@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
 import api from '../services/api';
-import { useClerkMount } from '../providers/LazyClerk';
 
 const CartContext = createContext();
 
-const CartManager = ({ children }) => {
-  const { isSignedIn, isLoaded } = useAuth();
+export const CartProvider = ({ children }) => {
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +16,7 @@ const CartManager = ({ children }) => {
   // Sync with backend on login
   useEffect(() => {
     const fetchCart = async () => {
-      if (!isLoaded || !isSignedIn) {
+      if (authLoading || !isAuthenticated) {
         setCartItems([]);
         return;
       }
@@ -43,10 +42,10 @@ const CartManager = ({ children }) => {
     };
 
     fetchCart();
-  }, [isSignedIn, isLoaded]);
+  }, [isAuthenticated, authLoading]);
 
   const addToCart = useCallback(async (product, quantity = 1, metadata = null) => {
-    if (!isSignedIn) {
+    if (!isAuthenticated) {
       toast.error('Please login to add items to your cart', {
         icon: '🔒',
         duration: 3000
@@ -97,10 +96,10 @@ const CartManager = ({ children }) => {
       toast.error(errorMsg);
       console.error('Add to Cart Error:', error.response?.data || error);
     }
-  }, [isSignedIn]);
+  }, [isAuthenticated, cartItems]);
 
   const removeFromCart = useCallback(async (productId) => {
-    if (!isSignedIn) return;
+    if (!isAuthenticated) return;
 
     try {
       const response = await api.delete(`/cart/remove/${productId}`);
@@ -118,10 +117,10 @@ const CartManager = ({ children }) => {
       console.error('Failed to remove from cart:', error);
       toast.error('Failed to remove item');
     }
-  }, [isSignedIn]);
+  }, [isAuthenticated]);
 
   const updateQuantity = useCallback(async (productId, newQuantity) => {
-    if (!isSignedIn) return;
+    if (!isAuthenticated) return;
     if (newQuantity < 1) return;
 
     try {
@@ -142,10 +141,10 @@ const CartManager = ({ children }) => {
     } catch (error) {
       console.error('Failed to update quantity:', error);
     }
-  }, [isSignedIn]);
+  }, [isAuthenticated]);
 
   const clearCart = useCallback(async () => {
-    if (!isSignedIn) return;
+    if (!isAuthenticated) return;
 
     try {
       const response = await api.delete('/cart/clear');
@@ -155,7 +154,7 @@ const CartManager = ({ children }) => {
     } catch (error) {
       console.error('Failed to clear cart:', error);
     }
-  }, [isSignedIn]);
+  }, [isAuthenticated]);
 
   const value = useMemo(() => ({
     cartItems,
@@ -169,31 +168,6 @@ const CartManager = ({ children }) => {
   }), [cartItems, loading, addToCart, removeFromCart, updateQuantity, clearCart]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
-};
-
-export const CartProvider = ({ children }) => {
-  const { clerkReady } = useClerkMount();
-
-  if (!clerkReady) {
-    const guestValue = {
-      cartItems: [],
-      cart: [],
-      loading: false,
-      addToCart: () => toast.error('Please login to use cart', { icon: '🔒' }),
-      removeFromCart: () => { },
-      updateQuantity: () => { },
-      clearCart: () => { },
-      getCartItemId: (item) => item?.id || item?._id
-    };
-
-    return (
-      <CartContext.Provider value={guestValue}>
-        {children}
-      </CartContext.Provider>
-    );
-  }
-
-  return <CartManager>{children}</CartManager>;
 };
 
 export const useCart = () => useContext(CartContext);

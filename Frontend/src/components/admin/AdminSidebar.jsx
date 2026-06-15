@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import {
   ChevronDown,
   Grid2X2,
@@ -11,7 +11,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
-import { useUser, useClerk } from '@clerk/clerk-react';
+import { useAuth } from '../../contexts/AuthContext';
 import logo from '../../assets/home/logo1.png';
 
 const navItems = [
@@ -26,8 +26,13 @@ const navItems = [
 ];
 
 const AdminSidebar = ({ isCollapsed }) => {
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   return (
     <aside className={`fixed left-0 top-0 z-50 flex h-screen flex-col overflow-hidden bg-[#8d0000] text-white shadow-[18px_0_45px_rgba(70,0,0,0.16)] transition-all duration-300 ${isCollapsed ? 'w-[80px]' : 'w-[248px]'}`}>
@@ -68,20 +73,22 @@ const AdminSidebar = ({ isCollapsed }) => {
 
       <div className="shrink-0 px-4 pb-4">
         <div className={`flex items-center rounded-xl border border-white/10 bg-[#760000] transition-all duration-300 ${isCollapsed ? 'justify-center p-2' : 'gap-3 p-3'}`}>
-          <img
-            src={user?.imageUrl}
-            alt="Profile"
-            className="h-10 w-10 shrink-0 rounded-full border border-white/30 object-cover"
-          />
+          <div className="h-10 w-10 shrink-0 rounded-full border border-white/30 overflow-hidden bg-[#8d0000] flex items-center justify-center">
+            {user?.avatar ? (
+              <img src={user.avatar} alt="Profile" className="h-full w-full object-cover" />
+            ) : (
+              <Users className="h-5 w-5 text-white/50" />
+            )}
+          </div>
           {!isCollapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-white">{user?.firstName || user?.fullName || 'Admin'}</p>
-              <p className="text-xs text-white/70">Super Admin</p>
+              <p className="truncate text-sm font-bold text-white">{user?.name || 'Admin'}</p>
+              <p className="text-xs text-white/70">{user?.role || 'Admin'}</p>
             </div>
           )}
           {!isCollapsed && (
             <button
-              onClick={() => signOut({ redirectUrl: '/' })}
+              onClick={handleLogout}
               className="grid h-8 w-8 place-items-center rounded-lg text-white/78 transition hover:bg-white/10 hover:text-white"
               title="Sign Out"
             >

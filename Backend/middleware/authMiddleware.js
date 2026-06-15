@@ -1,52 +1,66 @@
-const { ClerkExpressRequireAuth } = require('@clerk/clerk-sdk-node');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// 1. Protect routes (Ensure user is logged in via Clerk)
-// This uses Clerk's official middleware to verify the session/token
-exports.protect = ClerkExpressRequireAuth();
-
-// 2. Admin access (Ensure user has Admin role in MongoDB)
-exports.admin = async (req, res, next) => {
+// 1. Protect routes (Ensure user is logged in via JWT)
+exports.protect = async (req, res, next) => {
     try {
-        // Clerk puts user info in req.auth
-        const clerkId = req.auth.userId;
+        let token;
 
-        const user = await User.findOne({ clerkId });
+        // Get token from cookies or Authorization header
+        if (req.cookies.token) {
+            token = req.cookies.token;
+        } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            token = req.headers.authorization.split(' ')[1];
+        }
 
-        if (user && (user.role === 'Admin' || user.role === 'SuperAdmin')) {
-            next();
-        } else {
-            res.status(403).json({
+        if (!token || token === 'none') {
+            return res.status(401).json({
                 success: false,
-                message: 'Not authorized as an admin'
+                message: 'No token, authorization denied'
             });
         }
+
+        // Verify token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        req.user = await User.findById(decoded.id);
+
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'User no longer exists'
+            });
+        }
+
+        next();
     } catch (error) {
-        res.status(500).json({
+        return res.status(401).json({
             success: false,
-            message: 'Server Error in admin middleware'
+            message: 'Token is not valid'
         });
     }
 };
 
-// 3. SuperAdmin access (Optional)
-exports.superAdmin = async (req, res, next) => {
-    try {
-        const clerkId = req.auth.userId;
-        const user = await User.findOne({ clerkId });
-
-        if (user && user.role === 'SuperAdmin') {
-            next();
-        } else {
-            res.status(403).json({
-                success: false,
-                message: 'Requires SuperAdmin privileges'
-            });
-        }
-    } catch (error) {
-        res.status(500).json({
+// 2. Admin access (Ensure user has Admin role)
+exports.admin = async (req, res, next) => {
+    if (req.user && (req.user.role === 'Admin' || req.user.role === 'SuperAdmin')) {
+        next();
+    } else {
+        res.status(403).json({
             success: false,
-            message: 'Server Error'
+            message: 'Not authorized as an admin'
+        });
+    }
+};
+
+// 3. SuperAdmin access
+exports.superAdmin = async (req, res, next) => {
+    if (req.user && req.user.role === 'SuperAdmin') {
+        next();
+    } else {
+        res.status(403).json({
+            success: false,
+            message: 'Requires SuperAdmin privileges'
         });
     }
 };

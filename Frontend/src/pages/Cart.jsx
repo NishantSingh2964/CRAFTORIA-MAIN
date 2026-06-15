@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '../contexts/AuthContext';
 import { CheckCircle2 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useProducts } from '../contexts/ProductContext';
@@ -59,7 +59,7 @@ const trustItems = [
 ];
 
 const Cart = () => {
-  const { isLoaded, isSignedIn } = useUser();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const { cartItems, removeFromCart, updateQuantity, clearCart, addToCart } = useCart();
   const { products, fetchProducts } = useProducts();
 
@@ -77,7 +77,7 @@ const Cart = () => {
     toast.success('Cart cleared');
   };
 
-  if (!isLoaded) {
+  if (authLoading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center bg-[#fafafa]">
         <p className="font-sans text-gray-500 text-sm">Loading your cart...</p>
@@ -85,8 +85,15 @@ const Cart = () => {
     );
   }
 
-  if (!isSignedIn) {
-    return null;
+  if (!isAuthenticated) {
+    return (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[#fafafa]">
+          <h2 className="font-serif text-2xl font-bold text-gray-900 mb-2 text-center px-4">Please sign in to view your cart</h2>
+          <Link to="/login?redirect=/cart" className="mt-4 px-8 py-3 bg-[#760000] text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-red-800 transition">
+            Sign In
+          </Link>
+        </div>
+    );
   }
 
   return (

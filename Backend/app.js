@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
@@ -45,6 +46,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
 app.use(helmet());
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
@@ -56,6 +58,7 @@ app.get('/', (req, res) => {
 });
 
 // Routes
+app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/occasions', require('./routes/occasionRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));

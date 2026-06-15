@@ -9,11 +9,11 @@ const User = require('../models/User');
 // @access  Private
 exports.createOrder = async (req, res, next) => {
     try {
-        const user = await User.findOne({ clerkId: req.auth.userId });
+        const user = req.user;
         const orderData = {
             ...req.body,
-            userId: req.auth.userId,
-            customerEmail: user ? user.email : 'Unknown'
+            userId: user._id.toString(),
+            customerEmail: user.email
         };
 
         const order = await Order.create(orderData);
@@ -33,7 +33,8 @@ exports.createOrder = async (req, res, next) => {
 exports.createCheckoutSession = async (req, res, next) => {
     try {
         const { items, deliveryInfo, customerEmail: providedEmail } = req.body;
-        const userId = req.auth.userId;
+        const user = req.user;
+        const userId = user._id.toString();
 
         const line_items = items.map((item) => {
             // Use item.price from frontend — already includes ₹200 customization fee if applicable
@@ -58,8 +59,7 @@ exports.createCheckoutSession = async (req, res, next) => {
         const orderNumber = `GT-${Math.floor(100000 + Math.random() * 900000)}`;
         const totalAmount = line_items.reduce((sum, item) => sum + (item.price_data.unit_amount * item.quantity), 0) / 100;
 
-        const user = await User.findOne({ clerkId: userId });
-        const finalCustomerEmail = providedEmail || (user ? user.email : 'Unknown');
+        const finalCustomerEmail = providedEmail || user.email;
 
         // Create initial order in DB
         const order = await Order.create({
@@ -128,7 +128,7 @@ exports.createCheckoutSession = async (req, res, next) => {
 // @access  Private
 exports.getMyOrders = async (req, res, next) => {
     try {
-        const userId = req.auth?.userId;
+        const userId = req.user?._id.toString();
         if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
         
         const orders = await Order.find({ userId }).sort('-createdAt');
@@ -202,7 +202,7 @@ exports.downloadInvoice = async (req, res, next) => {
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
         
         // Ensure user owns the order
-        if (order.userId !== req.auth.userId) {
+        if (order.userId !== req.user._id.toString()) {
             return res.status(403).json({ success: false, message: 'Not authorized' });
         }
 
@@ -258,7 +258,7 @@ exports.markPaymentPending = async (req, res, next) => {
     try {
         const order = await Order.findById(req.params.id);
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-        if (order.userId !== req.auth.userId) {
+        if (order.userId !== req.user._id.toString()) {
             return res.status(403).json({ success: false, message: 'Not authorized' });
         }
         // If already paid, do nothing — edge case where payment succeeded after user clicked back
@@ -292,7 +292,7 @@ exports.retryPayment = async (req, res, next) => {
     try {
         const order = await Order.findById(req.params.id);
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-        if (order.userId !== req.auth.userId) {
+        if (order.userId !== req.user._id.toString()) {
             return res.status(403).json({ success: false, message: 'Not authorized' });
         }
         if (order.paymentStatus === 'Paid') {
@@ -346,7 +346,7 @@ exports.cancelOrder = async (req, res, next) => {
         const order = await Order.findById(req.params.id);
 
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-        if (order.userId !== req.auth.userId) return res.status(403).json({ success: false, message: 'Not authorized' });
+        if (order.userId !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
 
         // Check if cancellable (Only if status is Processing)
         if (order.status !== 'Processing') {
@@ -456,7 +456,7 @@ exports.withdrawCancellationRequest = async (req, res, next) => {
         const order = await Order.findById(req.params.id);
 
         if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-        if (order.userId !== req.auth.userId) return res.status(403).json({ success: false, message: 'Not authorized' });
+        if (order.userId !== req.user._id.toString()) return res.status(403).json({ success: false, message: 'Not authorized' });
 
         if (order.status !== 'Cancellation Requested') {
             return res.status(400).json({ success: false, message: 'Order is not in Cancellation Requested state' });
