@@ -35,8 +35,8 @@ const Register = () => {
       {/* Left Side: Brand Section (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-[#760000] items-center justify-center overflow-hidden">
         {/* Back Button (Desktop) */}
-        <button 
-          onClick={() => navigate(-1)}
+        <button
+          onClick={() => navigate('/')}
           className="absolute top-8 left-8 z-20 group flex items-center gap-2 text-sm font-bold text-red-100/80 hover:text-white transition-colors"
         >
           <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
@@ -52,9 +52,9 @@ const Register = () => {
 
         <div className="relative z-10 text-center px-12">
           <Link to="/" className="inline-block mb-8 transform hover:scale-105 transition-transform duration-500">
-             <img src="/logo-nav.webp" alt="CRAFTORIAL" className="h-24 w-auto brightness-0 invert" />
+            <img src="/logo2.png" alt="CRAFTORIAL" className="h-24 w-auto brightness-0 invert" />
           </Link>
-          
+
           <div className="space-y-6 max-w-lg mx-auto">
             <h1 className="text-4xl xl:text-5xl font-serif font-bold text-white leading-tight">
               Create Memories, <br />
@@ -63,7 +63,7 @@ const Register = () => {
             <p className="text-red-50/80 text-lg font-sans leading-relaxed">
               Unlock a world of premium gifting. Register today to save your favorites, track your orders, and receive early access to new collections.
             </p>
-            
+
             <div className="pt-8 grid grid-cols-2 gap-4 text-left">
               <div className="flex items-center gap-3 text-red-100/90 text-sm">
                 <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
@@ -106,7 +106,7 @@ const Register = () => {
           </div>
 
           {/* Back Button (Mobile) */}
-          <button 
+          <button
             onClick={() => navigate(-1)}
             className="lg:hidden group mb-6 flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-[#760000] transition-colors"
           >
